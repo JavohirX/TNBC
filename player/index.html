@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0d0e14">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>The Nightmare Before Christmas - Mobile Player</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            overflow: hidden;
+            background-color: #08090d;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            color: #e0e2ec;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 440px;
+            height: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            background: #0d0e15;
+            position: relative;
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
+        }
+
+        /* --- SCREEN CONTAINER: PRESERVES 3:4 RATIO & FITS BY WIDTH --- */
+        #screen-wrapper {
+            width: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            flex-shrink: 0;
+            border-bottom: 2px solid #232635;
+        }
+
+        #screen-container {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            max-height: 56vh;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #display {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            display: none;
+            background-color: #000;
+        }
+
+        #display:focus {
+            outline: none;
+        }
+
+        /* --- LOADING & SPLASH SCREEN --- */
+        #splash-screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #1a162b 0%, #08070e 100%);
+            color: #d8b4fe;
+            text-align: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .title-badge {
+            font-size: 1.15em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #f59e0b;
+            margin-bottom: 6px;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        .subtitle-badge {
+            font-size: 0.85em;
+            color: #a78bfa;
+            margin-bottom: 20px;
+        }
+
+        .spinner {
+            width: 38px;
+            height: 38px;
+            border: 3px solid rgba(167, 139, 250, 0.2);
+            border-top-color: #f59e0b;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #loading-text {
+            font-size: 0.9em;
+            color: #cbd5e1;
+        }
+
+        /* --- LOWER MOBILE CONTROLS PANEL --- */
+        .mobile-controls-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px 14px 16px 14px;
+            background: linear-gradient(180deg, #13151f 0%, #0a0b10 100%);
+            touch-action: none;
+            position: relative;
+        }
+
+        /* Soft Keys & Toolbar Row */
+        .softkey-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .ctrl-btn {
+            background: linear-gradient(180deg, #262938 0%, #1a1c26 100%);
+            color: #e2e8f0;
+            border: 1px solid #373b4e;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: transform 0.05s ease, background 0.05s ease, box-shadow 0.05s ease;
+            touch-action: none;
+        }
+
+        .ctrl-btn:active, .ctrl-btn.active {
+            background: linear-gradient(180deg, #4f46e5 0%, #3730a3 100%);
+            border-color: #6366f1;
+            transform: translateY(2px);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 0 12px rgba(99, 102, 241, 0.4);
+            color: #fff;
+        }
+
+        .soft-btn {
+            flex: 1.2;
+            height: 38px;
+            font-size: 0.88em;
+            letter-spacing: 0.5px;
+            color: #cbd5e1;
+            border-color: #43485d;
+        }
+
+        .center-tools {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tool-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.05em;
+            background: #1e212d;
+            border: 1px solid #323647;
+            color: #94a3b8;
+        }
+
+        .tool-btn.active {
+            color: #f59e0b;
+            border-color: #f59e0b;
+        }
+
+        .tool-btn.muted {
+            color: #ef4444;
+            border-color: #ef4444;
+        }
+
+        /* --- MAIN PAD AREA (D-PAD & ACTION BUTTONS) --- */
+        .main-pad-row {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 6px;
+            gap: 16px;
+        }
+
+        /* Ergonomic Virtual D-Pad */
+        .dpad-container {
+            width: 146px;
+            height: 146px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            position: relative;
+            background: #141620;
+            border-radius: 50%;
+            padding: 4px;
+            border: 2px solid #232738;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        .dpad-btn {
+            border: none;
+            background: #252837;
+            color: #cbd5e1;
+            font-size: 1.35em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+            border-radius: 6px;
+            margin: 2px;
+        }
+
+        .dpad-up    { grid-column: 2; grid-row: 1; border-radius: 12px 12px 4px 4px; }
+        .dpad-left  { grid-column: 1; grid-row: 2; border-radius: 12px 4px 4px 12px; }
+        .dpad-mid   { grid-column: 2; grid-row: 2; border-radius: 6px; background: #2f3448; font-size: 0.9em; font-weight: 700; color: #f59e0b; }
+        .dpad-right { grid-column: 3; grid-row: 2; border-radius: 4px 12px 12px 4px; }
+        .dpad-down  { grid-column: 2; grid-row: 3; border-radius: 4px 4px 12px 12px; }
+
+        .dpad-btn:active, .dpad-btn.active {
+            background: #4f46e5;
+            color: #fff;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4), 0 0 10px rgba(99,102,241,0.5);
+        }
+
+        /* Action Buttons Area */
+        .action-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding-right: 6px;
+        }
+
+        .btn-action-round {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95em;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.6), inset 0 2px 0 rgba(255,255,255,0.2);
+        }
+
+        .btn-fire {
+            background: linear-gradient(180deg, #ea580c 0%, #c2410c 100%);
+            border: 2px solid #f97316;
+            color: #fff;
+            box-shadow: 0 6px 18px rgba(234, 88, 12, 0.4), inset 0 2px 0 rgba(255,255,255,0.3);
+        }
+
+        .btn-fire:active, .btn-fire.active {
+            background: linear-gradient(180deg, #c2410c 0%, #9a3412 100%);
+            transform: scale(0.94);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.6), 0 0 16px rgba(249, 115, 22, 0.6);
+        }
+
+        .btn-special {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(180deg, #7c3aed 0%, #6d28d9 100%);
+            border: 2px solid #8b5cf6;
+            color: #ede9fe;
+            font-size: 0.85em;
+            align-self: flex-end;
+            margin-bottom: 6px;
+        }
+
+        .btn-special:active, .btn-special.active {
+            background: linear-gradient(180deg, #6d28d9 0%, #5b21b6 100%);
+            transform: scale(0.94);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.6), 0 0 14px rgba(139, 92, 246, 0.6);
+        }
+
+        .btn-label-sub {
+            font-size: 0.65em;
+            font-weight: 500;
+            opacity: 0.85;
+            margin-top: 1px;
+        }
+
+        /* --- COLLAPSIBLE NUMERIC KEYPAD DRAWER --- */
+        #num-keypad {
+            position: absolute;
+            left: 12px;
+            right: 12px;
+            bottom: 6px;
+            background: #141724;
+            border: 2px solid #373b4e;
+            border-radius: 12px;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            box-shadow: 0 -8px 24px rgba(0,0,0,0.8);
+            z-index: 20;
+            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+        }
+
+        #num-keypad.hidden {
+            transform: translateY(110%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .num-btn {
+            height: 42px;
+            font-size: 1.15em;
+            border-radius: 8px;
+            background: #232737;
+            border-color: #383e54;
+        }
+
+        .num-btn span {
+            font-size: 0.5em;
+            color: #94a3b8;
+            margin-left: 4px;
+        }
+
+        /* Landscape adjustments if rotated */
+        @media (orientation: landscape) and (max-height: 500px) {
+            #app-container {
+                max-width: 100%;
+                flex-direction: row;
+            }
+            #screen-wrapper {
+                height: 100%;
+                width: auto;
+                border-bottom: none;
+                border-right: 2px solid #232635;
+            }
+            #screen-container {
+                height: 100%;
+                width: auto;
+                max-height: 100%;
+            }
+            .mobile-controls-panel {
+                flex: 1;
+                height: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <!-- 3:4 SCREEN CONTAINER (FIT BY WIDTH) -->
+        <div id="screen-wrapper">
+            <div id="screen-container">
+                <canvas id="display" tabindex="0"></canvas>
+                <div id="splash-screen">
+                    <div class="title-badge">Nightmare Before Christmas</div>
+                    <div class="subtitle-badge">Living Mobile &bull; J2ME 240&times;320</div>
+                    <div class="spinner"></div>
+                    <div id="loading-text">Initializing Audio & Engine...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOWER CONTROLS PANEL -->
+        <div class="mobile-controls-panel">
+            <!-- TOP SOFTKEYS & TOOLS -->
+            <div class="softkey-row">
+                <button class="ctrl-btn soft-btn" data-key="F1" aria-label="Left Soft Key">LSK (Menu)</button>
+                <div class="center-tools">
+                    <button id="btn-mute" class="ctrl-btn tool-btn" title="Toggle Sound">🔊</button>
+                    <button id="btn-kbd-toggle" class="ctrl-btn tool-btn" title="Toggle Number Keypad">🔢</button>
+                    <button id="btn-fullscreen" class="ctrl-btn tool-btn" title="Fullscreen">⛶</button>
+                    <button id="btn-reset" class="ctrl-btn tool-btn" title="Restart Game">⟲</button>
+                </div>
+                <button class="ctrl-btn soft-btn" data-key="F2" aria-label="Right Soft Key">RSK (Back)</button>
+            </div>
+
+            <!-- MAIN GAME CONTROLS (D-PAD & ACTION BUTTONS) -->
+            <div class="main-pad-row">
+                <!-- Virtual D-Pad -->
+                <div class="dpad-container">
+                    <button class="ctrl-btn dpad-btn dpad-up" data-key="ArrowUp" aria-label="Up">▲</button>
+                    <button class="ctrl-btn dpad-btn dpad-left" data-key="ArrowLeft" aria-label="Left">◄</button>
+                    <button class="ctrl-btn dpad-btn dpad-mid" data-key="Enter" aria-label="OK">OK</button>
+                    <button class="ctrl-btn dpad-btn dpad-right" data-key="ArrowRight" aria-label="Right">►</button>
+                    <button class="ctrl-btn dpad-btn dpad-down" data-key="ArrowDown" aria-label="Down">▼</button>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-container">
+                    <button class="ctrl-btn btn-action-round btn-special" data-key="NumpadAsterisk" aria-label="Action 2 / Star">
+                        <span>★</span>
+                        <span class="btn-label-sub">ACTION</span>
+                    </button>
+                    <button class="ctrl-btn btn-action-round btn-fire" data-key="Enter" aria-label="Fire / Action 1">
+                        <span>FIRE</span>
+                        <span class="btn-label-sub">WHIP / 5</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- COLLAPSIBLE NUMERIC KEYPAD -->
+            <div id="num-keypad" class="hidden">
+                <button class="ctrl-btn num-btn" data-key="Digit1">1</button>
+                <button class="ctrl-btn num-btn" data-key="Digit2">2<span>ABC</span></button>
+                <button class="ctrl-btn num-btn" data-key="Digit3">3<span>DEF</span></button>
+                <button class="ctrl-btn num-btn" data-key="Digit4">4<span>GHI</span></button>
+                <button class="ctrl-btn num-btn" data-key="Digit5">5<span>JKL</span></button>
+                <button class="ctrl-btn num-btn" data-key="Digit6">6<span>MNO</span></button>
+                <button class="ctrl-btn num-btn" data-key="Digit7">7<span>PQRS</span></button>
+                <button class="ctrl-btn num-btn" data-key="Digit8">8<span>TUV</span></button>
+                <button class="ctrl-btn num-btn" data-key="Digit9">9<span>WXYZ</span></button>
+                <button class="ctrl-btn num-btn" data-key="NumpadAsterisk">*</button>
+                <button class="ctrl-btn num-btn" data-key="Digit0">0<span>+</span></button>
+                <button class="ctrl-btn num-btn" data-key="NumpadDivide">#</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CheerpJ WebAssembly Java Runtime -->
+    <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
+    <!-- Application Logic -->
+    <script type="module" src="src/main.js"></script>
+</body>
+</html>
