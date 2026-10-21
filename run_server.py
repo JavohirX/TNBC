@@ -86,23 +86,35 @@ class CheerpJServerHandler(http.server.SimpleHTTPRequestHandler):
 
     def copyfile(self, source, outputfile):
         if not hasattr(self, 'range_start'):
-            super().copyfile(source, outputfile)
+            try:
+                super().copyfile(source, outputfile)
+            except (ConnectionResetError, BrokenPipeError):
+                pass
             return
 
         source.seek(self.range_start)
         bytes_to_send = self.range_end - self.range_start + 1
         buffer_size = 64 * 1024
 
-        while bytes_to_send > 0:
-            chunk = source.read(min(bytes_to_send, buffer_size))
-            if not chunk:
-                break
-            outputfile.write(chunk)
-            bytes_to_send -= len(chunk)
+        try:
+            while bytes_to_send > 0:
+                chunk = source.read(min(bytes_to_send, buffer_size))
+                if not chunk:
+                    break
+                outputfile.write(chunk)
+                bytes_to_send -= len(chunk)
+        except (ConnectionResetError, BrokenPipeError):
+            pass
 
 class ThreadingServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
     daemon_threads = True
     allow_reuse_address = True
+
+    def handle_error(self, request, client_address):
+        exc_type, _, _ = sys.exc_info()
+        if exc_type in (ConnectionResetError, BrokenPipeError):
+            return
+        super().handle_error(request, client_address)
 
 def main():
     port = PORT

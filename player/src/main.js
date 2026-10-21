@@ -43,11 +43,8 @@ function setupScaling() {
 
     function updateScale() {
         if (!container || !display) return;
-        // The container fits 100% of mobile viewport width.
-        // Aspect ratio 3:4 means height = width * (320 / 240) = width * 1.3333.
-        const containerWidth = container.clientWidth;
-        const targetHeight = Math.round(containerWidth * (320 / 240));
-        container.style.height = targetHeight + 'px';
+        // In landscape or small-height viewports, let CSS flexbox & aspect-ratio constrain the height
+        // to prevent pushing the controls panel off screen.
     }
 
     window.addEventListener('resize', updateScale);
@@ -189,6 +186,27 @@ async function init() {
     console.log('[App] init() started. cheerpjWebRoot =', cheerpjWebRoot);
     const loadingEl = document.getElementById("loading-text");
     const loadingSubtext = document.getElementById("loading-subtext");
+    const progressBar = document.getElementById("progress-bar-fill");
+    const progressTimer = document.getElementById("loading-timer");
+
+    let startTime = Date.now();
+    const progressTimerId = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        let pct = Math.min(94, Math.round(5 + (elapsed / 48) * 85));
+        if (progressBar) progressBar.style.width = pct + "%";
+        if (progressTimer) {
+            if (elapsed < 10) {
+                progressTimer.textContent = `Downloading WebAssembly JVM... (${elapsed}s)`;
+            } else if (elapsed < 28) {
+                progressTimer.textContent = `Compiling J2ME Bytecode... (${elapsed}s)`;
+            } else if (elapsed < 45) {
+                progressTimer.textContent = `Mounting Nightmare Assets... (${elapsed}s)`;
+            } else {
+                progressTimer.textContent = `Almost ready! Booting Game... (${elapsed}s)`;
+            }
+        }
+    }, 1000);
+
     if (loadingEl) loadingEl.textContent = "Loading WebAssembly Runtime...";
     if (loadingSubtext) loadingSubtext.textContent = "Downloading CheerpJ JVM (~20MB on initial run)...";
 
@@ -229,6 +247,8 @@ async function init() {
                 },
                 async Java_pl_zb3_freej2me_bridge_shell_Shell_setCanvasSize(lib, width, height) {
                     console.log('[App] setCanvasSize called:', width, height);
+                    clearInterval(progressTimerId);
+                    if (progressBar) progressBar.style.width = "100%";
                     if (!isReady) {
                         const splash = document.getElementById('splash-screen');
                         if (splash) splash.style.display = 'none';

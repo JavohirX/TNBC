@@ -26,12 +26,16 @@
             background-color: #08090d;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
             color: #e0e2ec;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #app-container {
             width: 100%;
             max-width: 440px;
             height: 100%;
+            max-height: 920px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -43,19 +47,21 @@
         /* --- SCREEN CONTAINER: PRESERVES 3:4 RATIO & FITS BY WIDTH --- */
         #screen-wrapper {
             width: 100%;
+            flex: 0 1 auto;
+            max-height: 52%;
             background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            flex-shrink: 0;
             border-bottom: 2px solid #232635;
         }
 
         #screen-container {
-            width: 100%;
+            height: 100%;
             aspect-ratio: 3 / 4;
-            max-height: 56vh;
+            max-width: 100%;
+            max-height: 100%;
             position: relative;
             background: #000;
             display: flex;
@@ -125,6 +131,33 @@
         #loading-text {
             font-size: 0.9em;
             color: #cbd5e1;
+        }
+
+        .progress-bar-wrap {
+            width: 82%;
+            max-width: 250px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 3px;
+            margin: 12px 0 6px 0;
+            overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        #progress-bar-fill {
+            width: 5%;
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b 0%, #ef4444 50%, #8b5cf6 100%);
+            border-radius: 3px;
+            transition: width 0.4s ease;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+        }
+
+        #loading-timer {
+            font-size: 0.76em;
+            color: #fbbf24;
+            font-family: monospace;
+            margin-top: 4px;
         }
 
         /* --- LOWER MOBILE CONTROLS PANEL --- */
@@ -478,10 +511,13 @@
             #app-container {
                 max-width: 100%;
                 flex-direction: row;
+                border-radius: 0;
             }
             #screen-wrapper {
                 height: 100%;
                 width: auto;
+                max-height: 100%;
+                flex: 0 0 auto;
                 border-bottom: none;
                 border-right: 2px solid #232635;
             }
@@ -493,6 +529,7 @@
             .mobile-controls-panel {
                 flex: 1;
                 height: 100%;
+                overflow-y: auto;
             }
         }
     </style>
@@ -508,7 +545,11 @@
                     <div class="subtitle-badge">Living Mobile &bull; J2ME 240&times;320</div>
                     <div class="spinner"></div>
                     <div id="loading-text">Initializing Audio & Engine...</div>
-                    <div id="loading-subtext" style="font-size: 0.76em; color: #94a3b8; margin-top: 10px; max-width: 280px; line-height: 1.4;">First launch compiles WebAssembly runtime (~45-60s). Subsequent launches will load instantly from browser cache.</div>
+                    <div class="progress-bar-wrap">
+                        <div id="progress-bar-fill"></div>
+                    </div>
+                    <div id="loading-timer">Booting JVM... (0s)</div>
+                    <div id="loading-subtext" style="font-size: 0.76em; color: #94a3b8; margin-top: 8px; max-width: 280px; line-height: 1.4;">First launch compiles WebAssembly runtime (~45-60s). Subsequent launches will load instantly from browser cache.</div>
                 </div>
             </div>
         </div>
