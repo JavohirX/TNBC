@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Nightmare Before Christmas - Pure JS Engine Test</title>
+    <title>Nightmare Before Christmas - Pure JS Engine</title>
     <style>
         * {
             box-sizing: border-box;
@@ -31,7 +31,7 @@
             flex-direction: column;
             background: #0d0e15;
             box-shadow: 0 0 35px rgba(0, 0, 0, 0.8);
-            overflow-y: auto;
+            overflow: hidden;
         }
 
         #header {
@@ -41,6 +41,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            flex-shrink: 0;
         }
 
         .title {
@@ -67,6 +68,7 @@
             justify-content: center;
             align-items: center;
             border-bottom: 2px solid #232635;
+            flex-shrink: 0;
         }
 
         #screen-container {
@@ -86,7 +88,7 @@
             object-fit: contain;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
-            background-color: #000;
+            background-color: #08090d;
         }
 
         /* --- 3D TACTILE RETRO CONTROLS --- */
@@ -267,6 +269,11 @@
             border-radius: 6px;
         }
 
+        .dpad-diagonal:active, .dpad-diagonal.active {
+            color: #38bdf8;
+            background: linear-gradient(180deg, #1f2333 0%, #131520 100%);
+        }
+
         .dpad-center-ok {
             background: linear-gradient(180deg, #443c2c 0%, #2e281b 50%, #1f1b12 100%);
             color: #fbbf24;
@@ -362,7 +369,7 @@
     <div id="app-container">
         <div id="header">
             <span class="title">Nightmare Before Christmas</span>
-            <span class="tag">Pure JS Canvas</span>
+            <span class="tag">Pure JS • 60 FPS</span>
         </div>
 
         <div id="screen-wrapper">
@@ -373,19 +380,19 @@
 
         <!-- LOWER CONTROLS PANEL (3D RETRO PHONE) -->
         <div class="mobile-controls-panel">
-            <!-- TOP SOFTKEYS (NOKIA TOP-LEFT & TOP-RIGHT) -->
+            <!-- TOP SOFTKEYS -->
             <div class="softkey-row">
                 <button id="btn-lsk" class="ctrl-btn btn-3d btn-3d-soft" data-key="F1" aria-label="Left Soft Key">
-                    <span>ROOMS</span>
+                    <span>STAGE</span>
                     <span class="soft-label-sub">LSK</span>
                 </button>
                 <div class="center-tools">
-                    <a href="../player/" class="ctrl-btn tool-btn" title="Back to CheerpJ Player" style="text-decoration:none;">🎮</a>
+                    <a href="../player/" class="ctrl-btn tool-btn" title="CheerpJ Player" style="text-decoration:none;">🎮</a>
                     <button id="btn-room-prev" class="ctrl-btn tool-btn" title="Previous Room">⏪</button>
                     <button id="btn-room-next" class="ctrl-btn tool-btn" title="Next Room">⏩</button>
                 </div>
                 <button id="btn-rsk" class="ctrl-btn btn-3d btn-3d-soft" data-key="F2" aria-label="Right Soft Key">
-                    <span>ANIMATE</span>
+                    <span>WHIP</span>
                     <span class="soft-label-sub">RSK</span>
                 </button>
             </div>
@@ -394,17 +401,14 @@
             <div class="main-pad-row">
                 <!-- 3x3 8-Way D-Pad with Diagonals & Center OK -->
                 <div class="dpad-8way-grid">
-                    <!-- Row 1: Up-Left, Up, Up-Right -->
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowUp,ArrowLeft" aria-label="Up-Left">↖</button>
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowUp" aria-label="Up">▲</button>
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowUp,ArrowRight" aria-label="Up-Right">↗</button>
 
-                    <!-- Row 2: Left, Center OK, Right -->
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowLeft" aria-label="Left">◄</button>
-                    <button class="ctrl-btn btn-3d dpad-cell dpad-center-ok" data-key="Enter" aria-label="OK">OK</button>
+                    <button id="btn-mid-ok" class="ctrl-btn btn-3d dpad-cell dpad-center-ok" data-key="Enter" aria-label="OK">OK</button>
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowRight" aria-label="Right">►</button>
 
-                    <!-- Row 3: Down-Left, Down, Down-Right -->
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowDown,ArrowLeft" aria-label="Down-Left">↙</button>
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowDown" aria-label="Down">▼</button>
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowDown,ArrowRight" aria-label="Down-Right">↘</button>
@@ -412,13 +416,11 @@
 
                 <!-- Right Thumb Action Area -->
                 <div class="action-cluster">
-                    <!-- Primary 3D Fire / Whip / Select Button -->
                     <button id="btn-fire" class="ctrl-btn btn-3d btn-3d-fire" data-key="Enter" aria-label="Fire / Whip / OK">
                         <span>FIRE</span>
                         <span class="btn-label-sub">WHIP / 5</span>
                     </button>
 
-                    <!-- 3-Key Row: Star (*), Zero (0), Hash (#) -->
                     <div class="key-row-3">
                         <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="NumpadAsterisk" aria-label="Star Key">
                             <span>✱</span>
@@ -439,184 +441,248 @@
     </div>
 
     <script type="module">
-        import { Graphics } from "./lcd/Graphics.js";
-        import { Image } from "./lcd/Image.js";
         import { DataInputStream } from "./io/DataInputStream.js";
 
-        let tile16 = null;
-        let tile32 = null;
-        let splash = null;
+        // Living Mobile Authentic Engine Dimensions
+        const ROOM_COLS = 11;
+        const ROOM_ROWS = 12;
+        const ROOM_BYTES = ROOM_COLS * ROOM_ROWS; // 132 bytes per room!
+        const TILE_SIZE = 20;                     // t.var_int_c = 20!
+        const SPRITE_SIZE = 37;                   // t.var_int_d = 37!
+
+        const TILESET_COLS = 16;                  // 320 / 20 = 16
+        const SPRITESET_COLS = 12;                // 446 / 37 = 12
+
+        const OFFSET_X = Math.floor((240 - ROOM_COLS * TILE_SIZE) / 2); // 10px
+        const OFFSET_Y = 40;                                            // 40px
+
+        // Living Mobile exact tile id map from r.d(x, y, code)
+        const TILE_MAP = {
+            0: 188,  // Clear floor path
+            3: 58,   // Spikes
+            4: 187,  // Wall variant
+            5: 171,  // Cobblestone solid wall
+            6: 59,   // Wall edge
+            7: 60,   // Wall corner
+            22: 86,  // Item / Key / Door
+            28: 155, // Stone platform
+            32: 221  // Exit / Gift bag
+        };
+
+        let tileImg = new Image();
+        let spriteImg = new Image();
         let allRooms = [];
         let currentRoomIdx = 0;
-        let isAnimating = false;
-        let jackFrame = 0;
-        let animTimer = null;
 
-        // Jack's interactive position in the test room
-        let jackX = 104;
-        let jackY = 160;
+        let jackX = 72;
+        let jackY = 63;
+        let jackFrame = 8;
+        let isAttacking = false;
+        let jackFacingLeft = false;
 
         const canvas = document.getElementById("game-canvas");
         const ctx = canvas.getContext("2d");
-        const g = new Graphics(ctx, 240, 320);
+        ctx.imageSmoothingEnabled = false;
 
         async function init() {
             try {
-                g.setColor(10, 8, 16);
-                g.fillRect(0, 0, 240, 320);
-
-                [tile16, tile32, splash] = await Promise.all([
-                    Image.loadFromUrl("../assets/16x16TileSet.png"),
-                    Image.loadFromUrl("../assets/32x32TileSet.png"),
-                    Image.loadFromUrl("../assets/splash.png")
+                await Promise.all([
+                    loadImage(tileImg, "../assets/16x16TileSet.png"),
+                    loadImage(spriteImg, "../assets/32x32TileSet.png")
                 ]);
 
-                const levelsRes = await fetch("../assets/levels.mar");
-                const buf = await levelsRes.arrayBuffer();
+                // Read levels.mar (13,200 bytes = 100 rooms of 132 bytes)
+                const res = await fetch("../assets/levels.mar");
+                const buf = await res.arrayBuffer();
                 const dis = new DataInputStream(buf);
-                const totalBytes = dis.available();
+                const totalRooms = Math.floor(dis.available() / ROOM_BYTES);
 
-                const roomCount = Math.floor(totalBytes / 300);
-                for (let i = 0; i < roomCount; i++) {
-                    const room = new Uint8Array(300);
+                for (let i = 0; i < totalRooms; i++) {
+                    const room = new Uint8Array(ROOM_BYTES);
                     dis.readFully(room);
                     allRooms.push(room);
                 }
 
-                renderRoom(0);
-                setupListeners();
+                loadRoom(0);
+                setupInput();
+                requestAnimationFrame(gameLoop);
             } catch (err) {
                 console.error("Init Error:", err);
             }
         }
 
-        function renderRoom(idx) {
+        function loadImage(img, src) {
+            return new Promise((resolve, reject) => {
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        function loadRoom(idx) {
             currentRoomIdx = (idx + allRooms.length) % allRooms.length;
             const roomData = allRooms[currentRoomIdx];
 
-            // 1. Clear background
-            g.setColor(5, 5, 10);
-            g.fillRect(0, 0, 240, 320);
-
-            // 2. Render 16x16 background tiles
-            const tilesPerRow = Math.floor(tile16.getWidth() / 16); // 20
-            for (let r = 0; r < 20; r++) {
-                for (let c = 0; c < 15; c++) {
-                    const tileIdx = roomData[r * 15 + c];
-                    if (tileIdx > 0) {
-                        const sx = (tileIdx % tilesPerRow) * 16;
-                        const sy = Math.floor(tileIdx / tilesPerRow) * 16;
-                        const dx = c * 16;
-                        const dy = r * 16;
-
-                        g.setClip(dx, dy, 16, 16);
-                        g.drawImage(tile16, dx - sx, dy - sy, 20);
-                    }
+            // Scan for Jack's initial spawn point (code 29)
+            for (let i = 0; i < ROOM_BYTES; i++) {
+                if (roomData[i] === 29) {
+                    const c = i % ROOM_COLS;
+                    const r = Math.floor(i / ROOM_COLS);
+                    jackX = OFFSET_X + c * TILE_SIZE - 8;
+                    jackY = OFFSET_Y + r * TILE_SIZE - 17;
+                    break;
                 }
             }
-            g.setClip(0, 0, 240, 320);
-
-            // 3. Render Jack Skellington at interactive coordinates
-            renderJack(jackFrame, jackX, jackY);
-
-            // 4. Render Stage HUD text
-            g.setColor(245, 158, 11);
-            g.drawString(`ROOM ${currentRoomIdx + 1} / ${allRooms.length}`, 8, 8, 20);
-            g.setColor(148, 163, 184);
-            g.drawString(`USE D-PAD TO MOVE JACK`, 8, 304, 20);
         }
 
-        function renderJack(frame, x, y) {
-            const spriteTilesPerRow = Math.floor(tile32.getWidth() / 32); // 13
-            const sx = (frame % spriteTilesPerRow) * 32;
-            const sy = Math.floor(frame / spriteTilesPerRow) * 32;
+        function render() {
+            // 1. Dark cemetery background
+            ctx.fillStyle = "#08090d";
+            ctx.fillRect(0, 0, 240, 320);
 
-            g.setClip(x, y, 32, 32);
-            g.drawImage(tile32, x - sx, y - sy, 20);
-            g.setClip(0, 0, 240, 320);
+            const roomData = allRooms[currentRoomIdx];
+            if (!roomData) return;
+
+            // 2. Render 20x20 Tiles with direct pixel blitting
+            for (let i = 0; i < ROOM_BYTES; i++) {
+                let code = roomData[i];
+                if (code === 29) code = 0; // Air under Jack spawn
+
+                const c = i % ROOM_COLS;
+                const r = Math.floor(i / ROOM_COLS);
+                const dx = OFFSET_X + c * TILE_SIZE;
+                const dy = OFFSET_Y + r * TILE_SIZE;
+
+                const tileId = TILE_MAP[code] !== undefined ? TILE_MAP[code] : (code > 7 ? 188 : 171);
+
+                const sx = (tileId % TILESET_COLS) * TILE_SIZE;
+                const sy = Math.floor(tileId / TILESET_COLS) * TILE_SIZE;
+
+                ctx.drawImage(tileImg, sx, sy, TILE_SIZE, TILE_SIZE, dx, dy, TILE_SIZE, TILE_SIZE);
+            }
+
+            // 3. Render Jack Skellington (37x37 sprite)
+            const jx = (jackFrame % SPRITESET_COLS) * SPRITE_SIZE;
+            const jy = Math.floor(jackFrame / SPRITESET_COLS) * SPRITE_SIZE;
+
+            ctx.save();
+            if (jackFacingLeft) {
+                ctx.translate(jackX + SPRITE_SIZE, jackY);
+                ctx.scale(-1, 1);
+                ctx.drawImage(spriteImg, jx, jy, SPRITE_SIZE, SPRITE_SIZE, 0, 0, SPRITE_SIZE, SPRITE_SIZE);
+            } else {
+                ctx.drawImage(spriteImg, jx, jy, SPRITE_SIZE, SPRITE_SIZE, jackX, jackY, SPRITE_SIZE, SPRITE_SIZE);
+            }
+            ctx.restore();
+
+            // 4. Clean Retro HUD Header
+            ctx.fillStyle = "#f59e0b";
+            ctx.font = "bold 11px monospace";
+            ctx.fillText(`STAGE: ${currentRoomIdx + 1} / ${allRooms.length}`, 12, 22);
+
+            ctx.fillStyle = "#94a3b8";
+            ctx.font = "10px monospace";
+            ctx.fillText("HALLOWEEN TOWN • 240x320", 12, 34);
+
+            // Bottom guide
+            ctx.fillStyle = "#64748b";
+            ctx.fillText("D-PAD: MOVE • FIRE: WHIP ATTACK", 12, 304);
+        }
+
+        function gameLoop() {
+            render();
+            requestAnimationFrame(gameLoop);
         }
 
         function triggerWhip() {
-            // Animate whip attack frames (e.g. frames 12, 13, 14, 15)
-            const attackFrames = [12, 13, 14, 15, 8];
-            let i = 0;
+            if (isAttacking) return;
+            isAttacking = true;
+            // Jack's whip animation sequence in 32x32TileSet
+            const frames = [12, 13, 14, 15, 8];
+            let step = 0;
             const whipInterval = setInterval(() => {
-                if (i < attackFrames.length) {
-                    jackFrame = attackFrames[i++];
-                    renderRoom(currentRoomIdx);
+                if (step < frames.length) {
+                    jackFrame = frames[step++];
                 } else {
                     clearInterval(whipInterval);
+                    jackFrame = 8;
+                    isAttacking = false;
                 }
-            }, 70);
+            }, 65);
         }
 
         function moveJack(dx, dy) {
-            jackX = Math.max(0, Math.min(240 - 32, jackX + dx));
-            jackY = Math.max(0, Math.min(320 - 32, jackY + dy));
-            jackFrame = (jackFrame + 1) % 8;
-            renderRoom(currentRoomIdx);
+            if (isAttacking) return;
+            if (dx < 0) jackFacingLeft = true;
+            if (dx > 0) jackFacingLeft = false;
+
+            const newX = jackX + dx;
+            const newY = jackY + dy;
+
+            // Constrain inside room bounds
+            jackX = Math.max(OFFSET_X - 6, Math.min(OFFSET_X + ROOM_COLS * TILE_SIZE - SPRITE_SIZE + 6, newX));
+            jackY = Math.max(OFFSET_Y - 10, Math.min(OFFSET_Y + ROOM_ROWS * TILE_SIZE - SPRITE_SIZE + 6, newY));
+
+            // Walk animation
+            jackFrame = jackFrame === 8 ? 9 : 8;
         }
 
-        function setupListeners() {
-            // Room buttons
-            document.getElementById("btn-room-next").addEventListener("click", () => renderRoom(currentRoomIdx + 1));
-            document.getElementById("btn-room-prev").addEventListener("click", () => renderRoom(currentRoomIdx - 1));
-            document.getElementById("btn-lsk").addEventListener("click", () => renderRoom(currentRoomIdx + 1));
+        function setupInput() {
+            // Stage navigation buttons
+            document.getElementById("btn-room-next").addEventListener("click", () => loadRoom(currentRoomIdx + 1));
+            document.getElementById("btn-room-prev").addEventListener("click", () => loadRoom(currentRoomIdx - 1));
+            document.getElementById("btn-lsk").addEventListener("click", () => loadRoom(currentRoomIdx + 1));
+            document.getElementById("btn-rsk").addEventListener("click", triggerWhip);
 
-            // Animate button
-            const rskBtn = document.getElementById("btn-rsk");
-            rskBtn.addEventListener("click", () => {
-                isAnimating = !isAnimating;
-                rskBtn.querySelector("span").textContent = isAnimating ? "STOP" : "ANIMATE";
-                if (isAnimating) {
-                    animTimer = setInterval(() => {
-                        jackFrame = (jackFrame + 1) % 24;
-                        renderRoom(currentRoomIdx);
-                    }, 100);
-                } else {
-                    clearInterval(animTimer);
-                }
-            });
-
-            // Whip button
+            // Whip buttons
             document.getElementById("btn-fire").addEventListener("click", triggerWhip);
+            document.getElementById("btn-mid-ok").addEventListener("click", triggerWhip);
 
-            // On-screen touch D-Pad
+            // D-Pad and keypad touch controls
             const buttons = document.querySelectorAll(".ctrl-btn");
             buttons.forEach(btn => {
-                const handleAction = () => {
+                const handleKey = () => {
                     const key = btn.dataset.key;
                     if (!key) return;
 
-                    if (key.includes("ArrowLeft")) moveJack(-8, 0);
-                    if (key.includes("ArrowRight")) moveJack(8, 0);
-                    if (key.includes("ArrowUp")) moveJack(0, -8);
-                    if (key.includes("ArrowDown")) moveJack(0, 8);
-                    if (key === "Enter") triggerWhip();
+                    const keys = key.split(",");
+                    let dx = 0;
+                    let dy = 0;
+
+                    for (const k of keys) {
+                        if (k.trim() === "ArrowLeft") dx -= 8;
+                        if (k.trim() === "ArrowRight") dx += 8;
+                        if (k.trim() === "ArrowUp") dy -= 8;
+                        if (k.trim() === "ArrowDown") dy += 8;
+                        if (k.trim() === "Enter") triggerWhip();
+                    }
+
+                    if (dx !== 0 || dy !== 0) moveJack(dx, dy);
                 };
 
                 btn.addEventListener("touchstart", (e) => {
                     e.preventDefault();
                     btn.classList.add("active");
-                    handleAction();
+                    handleKey();
                     try { if (navigator.vibrate) navigator.vibrate(10); } catch(e) {}
                 }, { passive: false });
 
                 btn.addEventListener("touchend", () => btn.classList.remove("active"));
                 btn.addEventListener("touchcancel", () => btn.classList.remove("active"));
+
                 btn.addEventListener("mousedown", () => {
                     btn.classList.add("active");
-                    handleAction();
+                    handleKey();
                 });
                 btn.addEventListener("mouseup", () => btn.classList.remove("active"));
             });
 
-            // Keyboard listeners
+            // Physical Keyboard support
             window.addEventListener("keydown", (e) => {
-                if (e.key === "ArrowLeft") moveJack(-8, 0);
-                else if (e.key === "ArrowRight") moveJack(8, 0);
-                else if (e.key === "ArrowUp") moveJack(0, -8);
-                else if (e.key === "ArrowDown") moveJack(0, 8);
+                if (e.key === "ArrowLeft" || e.key === "a") moveJack(-8, 0);
+                else if (e.key === "ArrowRight" || e.key === "d") moveJack(8, 0);
+                else if (e.key === "ArrowUp" || e.key === "w") moveJack(0, -8);
+                else if (e.key === "ArrowDown" || e.key === "s") moveJack(0, 8);
                 else if (e.key === "Enter" || e.key === " ") triggerWhip();
             });
         }
