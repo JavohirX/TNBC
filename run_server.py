@@ -114,21 +114,20 @@ def main():
             port += 1
 
     local_ip = get_local_ip()
-    local_url = f"http://localhost:{port}/engine/test_runner.html"
-    cheerpj_url = f"http://localhost:{port}/player/"
-    network_url = f"http://{local_ip}:{port}/engine/test_runner.html"
+    local_url = f"http://localhost:{port}/player/index.html"
+    cheerpj_url = f"http://localhost:{port}/player/index.html"
+    network_url = f"http://{local_ip}:{port}/player/index.html"
 
     print("=" * 60)
     print("  The Nightmare Before Christmas - Mobile Web")
     print("=" * 60)
-    print(f"  ⚡ Native Pure JS (0s load): {local_url}")
-    print(f"  🎮 Full Game (CheerpJ):     {cheerpj_url}")
-    print(f"  📱 Mobile Phone:            {network_url}")
+    print(f"  [Game Player] {local_url}")
+    print(f"  [Network IP]  {network_url}")
     print("=" * 60)
     print("  Range Requests:  Enabled (CheerpJ compatible)")
     print("  Press Ctrl+C to stop the server.\n")
 
-    webbrowser.open(local_url)
+    # webbrowser.open(local_url)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

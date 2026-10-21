@@ -508,8 +508,7 @@
                     <div class="subtitle-badge">Living Mobile &bull; J2ME 240&times;320</div>
                     <div class="spinner"></div>
                     <div id="loading-text">Initializing Audio & Engine...</div>
-                    <div id="loading-subtext" style="font-size: 0.76em; color: #94a3b8; margin-top: 10px; max-width: 280px; line-height: 1.4;">First launch compiles WebAssembly runtime (~60s). Subsequent launches will load instantly.</div>
-                    <a href="../engine/test_runner.html" style="margin-top: 16px; background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); color: #fff; padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.82rem; text-decoration: none; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4); display: inline-flex; align-items: center; gap: 6px;">⚡ Play Native Pure JS (0s Instant Load)</a>
+                    <div id="loading-subtext" style="font-size: 0.76em; color: #94a3b8; margin-top: 10px; max-width: 280px; line-height: 1.4;">First launch compiles WebAssembly runtime (~45-60s). Subsequent launches will load instantly from browser cache.</div>
                 </div>
             </div>
         </div>
@@ -518,7 +517,7 @@
         <div class="mobile-controls-panel">
             <!-- TOP SOFTKEYS (NOKIA TOP-LEFT & TOP-RIGHT) -->
             <div class="softkey-row">
-                <button class="ctrl-btn btn-3d btn-3d-soft" data-key="F1" aria-label="Left Soft Key">
+                <button id="btn-lsk" class="ctrl-btn btn-3d btn-3d-soft" data-key="F1" aria-label="Left Soft Key">
                     <span>OPTIONS</span>
                     <span class="soft-label-sub">LSK</span>
                 </button>
@@ -526,10 +525,9 @@
                     <button id="btn-mute" class="ctrl-btn tool-btn" title="Toggle Sound">🔊</button>
                     <button id="btn-kbd-toggle" class="ctrl-btn tool-btn" title="Toggle Number Keypad">🔢</button>
                     <button id="btn-fullscreen" class="ctrl-btn tool-btn" title="Fullscreen">⛶</button>
-                    <a href="../engine/test_runner.html" class="ctrl-btn tool-btn" title="Switch to Pure JS Engine" style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">⚡</a>
                     <button id="btn-reset" class="ctrl-btn tool-btn" title="Restart Game">⟲</button>
                 </div>
-                <button class="ctrl-btn btn-3d btn-3d-soft" data-key="F2" aria-label="Right Soft Key">
+                <button id="btn-rsk" class="ctrl-btn btn-3d btn-3d-soft" data-key="F2" aria-label="Right Soft Key">
                     <span>BACK</span>
                     <span class="soft-label-sub">RSK</span>
                 </button>
