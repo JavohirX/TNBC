@@ -377,7 +377,7 @@ export class e {
     break;
     }
     }
-    if (bl && (c2 >= e.var_int_b && c2 <= e.var_int_c || c2 >= e.var_int_d && c2 <= e.var_int_e || e.var_int_d != 97 && c2 >= 'a' && c2 <= 'z')) {
+    if (bl && (c2 >= e.var_int_b && c2 <= e.var_int_c || c2 >= e.var_int_d && c2 <= e.var_int_e || e.var_int_d != 97 && c2 >= 97 && c2 <= 122)) {
     c2 = e.a(c2);
     }
     if (c2 < e.var_int_b || c2 > e.var_int_c) break block8;
@@ -390,7 +390,7 @@ export class e {
     n3 -= e.var_int_f + 1;
     break block9;
     }
-    if (c2 == ' ' || c2 == 160) {
+    if (c2 == 32 || c2 == 160) {
     return e.f_i[n2] + e.var_byte_arr_b[n2];
     }
     let cArray = e.var_char_arr_arr_a[n2];

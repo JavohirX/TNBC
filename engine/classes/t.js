@@ -394,7 +394,7 @@ export class t extends FullCanvas {
     this.B();
     let n2 = this.var_javax_microedition_lcdui_Image_h.getHeight();
     let n3 = t.var_int_b - n2 - 16;
-    t.f_o = n3 / 12;
+    t.f_o = Math.floor(n3 / 12);
     t.f_p = 16 + t.f_o * 12;
     if (this.var_java_util_Timer_a == null) {
     this.var_java_util_Timer_a = new Timer();

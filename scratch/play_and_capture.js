@@ -14,7 +14,7 @@ async function main() {
         '--headless=new',
         '--disable-gpu',
         '--disable-extensions',
-        '--user-data-dir=C:\\Windows\\Temp\\chrome_nbc_play',
+        '--user-data-dir=C:\\Windows\\Temp\\chrome_nbc_play2',
         '--no-first-run',
         '--no-default-browser-check',
         '--window-size=460,940',
@@ -93,12 +93,12 @@ async function main() {
         }
     }
 
-    async function pressKey(j2meKey, name = "") {
+    async function pressKey(j2meKey, name = "", holdMs = 100, waitAfter = 180) {
         console.log(`[Input] Pressing key ${name} (${j2meKey})...`);
         await evaluate(`window.GMIDlet?.var_t_a?.keyPressed(${j2meKey})`);
-        await new Promise(r => setTimeout(r, 80));
+        await new Promise(r => setTimeout(r, holdMs));
         await evaluate(`window.GMIDlet?.var_t_a?.keyReleased(${j2meKey})`);
-        await new Promise(r => setTimeout(r, 150));
+        await new Promise(r => setTimeout(r, waitAfter));
     }
 
     console.log("Waiting for engine to finish booting...");
@@ -113,7 +113,6 @@ async function main() {
 
     await new Promise(r => setTimeout(r, 1000));
 
-    // Monitor engine state helper
     async function getGameState() {
         return await evaluate(`({
             menuState: window.a?.var_int_c,
@@ -121,6 +120,8 @@ async function main() {
             room: window.GMIDlet?.var_t_a?.var_n_a?.var_r_a?.var_int_c,
             jack_x: window.GMIDlet?.var_t_a?.var_n_a?.var_q_a?.var_int_b,
             jack_y: window.GMIDlet?.var_t_a?.var_n_a?.var_q_a?.var_int_d,
+            jack_anim: window.GMIDlet?.var_t_a?.var_n_a?.var_q_a?.var_int_a,
+            inGameActive: window.GMIDlet?.var_t_a?.var_n_a?.var_boolean_e,
             entities: window.GMIDlet?.var_t_a?.var_n_a?.var_g_a?.var_int_a
         })`);
     }
@@ -131,13 +132,11 @@ async function main() {
     console.log("Skipping Disney splash screen...");
     await pressKey(-5, "FIRE / ENTER");
     await new Promise(r => setTimeout(r, 800));
-    console.log("State after Disney splash:", await getGameState());
 
     // 2. Skip Nightmare Splash (State -2) -> Language Select (State 12)
     console.log("Skipping Nightmare splash screen...");
     await pressKey(-5, "FIRE / ENTER");
     await new Promise(r => setTimeout(r, 1000));
-    console.log("State after Nightmare splash:", await getGameState());
 
     // Capture Language Select Screen
     await saveScreenshot("screenshot_language_select.png", "Language Select Screen");
@@ -146,7 +145,6 @@ async function main() {
     console.log("Selecting Language (Fire / OK)...");
     await pressKey(-5, "FIRE / OK");
     await new Promise(r => setTimeout(r, 1000));
-    console.log("State after Language select:", await getGameState());
 
     // Capture Sound Prompt Screen
     await saveScreenshot("screenshot_sound_prompt.png", "Sound Prompt Screen");
@@ -155,7 +153,6 @@ async function main() {
     console.log("Accepting Sound via LSK (Options / Yes)...");
     await pressKey(-6, "LEFT SOFT KEY (YES)");
     await new Promise(r => setTimeout(r, 1200));
-    console.log("State after Sound prompt:", await getGameState());
 
     // Capture Main Title Menu
     await saveScreenshot("screenshot_main_menu.png", "Main Title Menu Screen");
@@ -164,10 +161,11 @@ async function main() {
     console.log("Starting New Game (Fire on 'Новая игра')...");
     await pressKey(-5, "FIRE / START GAME");
     await new Promise(r => setTimeout(r, 1000));
+
     let st = await getGameState();
     console.log("State after New Game press:", st);
 
-    // If it went to Level Select (menuState === 1), press Fire again to start level
+    // If it went to Level Select (menuState === 1), press Fire again to confirm Level 1
     if (st.menuState === 1) {
         console.log("In Level Select menu, pressing FIRE to confirm Level 1...");
         await pressKey(-5, "FIRE / CONFIRM LEVEL");
@@ -176,21 +174,37 @@ async function main() {
         console.log("State after Level Confirm:", st);
     }
 
-    // 6. Test in-game gameplay: walk right and whip
-    console.log("Testing in-game controls: Walking Jack right...");
-    await pressKey(-4, "RIGHT");
-    await pressKey(-4, "RIGHT");
-    await new Promise(r => setTimeout(r, 300));
+    // Capture the newly formatted Briefing Dialog screen (Clean Russian text!)
+    await saveScreenshot("screenshot_briefing_dialog.png", "Level 1 Briefing Dialog (Clean Text)");
 
-    console.log("Testing in-game controls: Jack whipping attack...");
-    await pressKey(-5, "FIRE / WHIP");
-    await new Promise(r => setTimeout(r, 400));
+    // 6. Dismiss the Briefing Dialog: Press Left Soft Key (LSK -6 "СТАРТ") or FIRE (-5)
+    console.log("Dismissing Level Briefing Dialog via LSK / FIRE...");
+    await pressKey(-6, "LEFT SOFT KEY (СТАРТ)");
+    await new Promise(r => setTimeout(r, 600));
+
+    // Wait for countdown ("3", "2", "1") to finish into active gameplay
+    console.log("Waiting for 3-2-1 countdown to finish...");
+    for (let c = 0; c < 25; c++) {
+        st = await getGameState();
+        if (st.inGameActive) break;
+        await new Promise(r => setTimeout(r, 100));
+    }
+    console.log("Countdown finished! In-Game Active:", st.inGameActive);
+
+    // 7. Active Gameplay Action: Walk Jack right!
+    console.log("Walking Jack right...");
+    await pressKey(-4, "RIGHT", 350, 200);
+    await pressKey(-4, "RIGHT", 350, 200);
+
+    // 8. Active Gameplay Action: Jack whipping attack!
+    console.log("Jack whipping attack...");
+    await pressKey(-5, "FIRE / WHIP", 250, 200);
 
     st = await getGameState();
     console.log("Final Active Gameplay State:", st);
 
-    // Capture Live In-Game Screen
-    await saveScreenshot("screenshot_gameplay_live.png", "Level 1 In-Game Live Screen");
+    // Capture Active Gameplay Screen with Jack Skellington walking and whipping!
+    await saveScreenshot("screenshot_gameplay_live.png", "Level 1 In-Game Live Screen (Jack Skellington Action)");
 
     ws.close();
     chrome.kill();

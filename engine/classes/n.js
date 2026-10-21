@@ -105,7 +105,7 @@ export class n {
     this.var_int_d -= 12;
     this.var_int_e = 6;
     }
-    if ((this.var_short_a & 0x40) != 0) {
+    if ((this.var_short_a & 0x50) != 0) {
     this.var_boolean_c = true;
     this.var_boolean_e = true;
     this.var_boolean_l = false;
@@ -163,11 +163,11 @@ export class n {
     p2.f_d = d2.f_b + d2.f_d;
     this.a(p2, 3);
     h2.f_b = f2.f_b + 15;
-    if (this.var_int_j / 25 == 0) {
+    if (Math.floor(this.var_int_j / 25) == 0) {
     h2.f_c = 91;
     h2.f_a = t.var_int_a / 2 - this.var_t_a.var_int_e;
     this.a(h2, 3);
-    } else if (this.var_int_j / 25 == 1) {
+    } else if (Math.floor(this.var_int_j / 25) == 1) {
     h2.f_c = 91;
     h2.f_a = t.var_int_a / 2 - t.var_int_c;
     this.a(h2, 3);
@@ -628,7 +628,7 @@ export class n {
     for (let i3 = 0; i3 < r.var_int_c; ++i3) {
     let by = byArray[i3];
     let n4 = i3 % r.var_int_a;
-    let n5 = i3 / r.var_int_a;
+    let n5 = Math.floor(i3 / r.var_int_a);
     i2 = null;
     let n6 = Math.abs(random.nextInt());
     switch (by) {

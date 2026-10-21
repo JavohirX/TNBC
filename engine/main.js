@@ -36,7 +36,9 @@ window.System = {
     },
     gc: () => {}
 };
+globalThis.System = window.System;
 window.Random = JavaRandom;
+globalThis.Random = JavaRandom;
 
 window.StringBuffer = class StringBuffer {
     constructor(capacity = 16) { this.s = ""; }
@@ -45,6 +47,7 @@ window.StringBuffer = class StringBuffer {
     toString() { return this.s; }
     setLength(n) { this.s = this.s.substring(0, n); }
 };
+globalThis.StringBuffer = window.StringBuffer;
 
 // 2. J2ME Canvas & LCDEUI Shims
 import { Graphics } from "./lcd/Graphics.js";

@@ -1,7 +1,7 @@
 export class q extends i {
     var_k_b = new k();
-    f_c = new k();
-    f_d = new k();
+    var_k_c = new k();
+    var_k_d = new k();
     var_k_e = new k();
     var_k_f = new k();
     var_k_g = new k();
@@ -10,11 +10,11 @@ export class q extends i {
     var_k_j = new k();
     var_k_k = new k();
     var_k_l = new k();
-    f_m = new k();
-    f_n = new k();
-    f_o = new k();
-    f_p = new k();
-    f_q = new k();
+    var_k_m = new k();
+    var_k_n = new k();
+    var_k_o = new k();
+    var_k_p = new k();
+    var_k_q = new k();
     var_k_r = new k();
     var_k_s = new k();
     var_k_t = new k();
@@ -68,8 +68,8 @@ export class q extends i {
     
     _a_1() {
     this.var_k_b.a(0, 4, 4);
-    this.f_c.a(4, 4, 4);
-    this.f_d.a(8, 4, 4);
+    this.var_k_c.a(4, 4, 4);
+    this.var_k_d.a(8, 4, 4);
     this.var_k_e.a(12, 4, 4);
     this.var_k_f.a(16, 12, 1);
     this.var_k_g.a(28, 12, 1);
@@ -78,16 +78,16 @@ export class q extends i {
     this.var_k_j.a(64, 6, 4);
     this.var_k_k.a(70, 6, 4);
     this.var_k_l.a(76, 6, 4);
-    this.f_m.a(82, 6, 4);
+    this.var_k_m.a(82, 6, 4);
     this.var_k_r.a(62, 3, 3);
     this.var_k_s.a(65, 3, 3);
     this.var_k_t.a(68, 3, 3);
     this.var_k_u.a(71, 3, 3);
-    this.f_n.a(88, 6, 3);
-    this.f_o.a(107, 7, 4);
-    this.f_p.a(114, 9, 4);
-    this.f_q.a(127, 10, 4);
-    this.var_h_a.f_c = this.f_d.f_a;
+    this.var_k_n.a(88, 6, 3);
+    this.var_k_o.a(107, 7, 4);
+    this.var_k_p.a(114, 9, 4);
+    this.var_k_q.a(127, 10, 4);
+    this.var_h_a.f_c = this.var_k_d.f_a;
     }
     
     boolean_a(n2, n3) {
@@ -151,28 +151,28 @@ export class q extends i {
     let n2 = 0;
     switch (this.f_o) {
     case 0: {
-    n2 = this.var_k_r.f_a + this.var_int_u / this.var_k_r.f_c;
+    n2 = this.var_k_r.f_a + Math.floor(this.var_int_u / this.var_k_r.f_c);
     if (n2 <= this.var_k_r.f_a + this.var_k_r.f_b - 1) break;
     n2 = this.var_k_r.f_a;
     this.var_int_u = 0;
     break;
     }
     case 1: {
-    n2 = this.var_k_s.f_a + this.var_int_u / this.var_k_s.f_c;
+    n2 = this.var_k_s.f_a + Math.floor(this.var_int_u / this.var_k_s.f_c);
     if (n2 <= this.var_k_s.f_a + this.var_k_s.f_b - 1) break;
     n2 = this.var_k_s.f_a;
     this.var_int_u = 0;
     break;
     }
     case 2: {
-    n2 = this.var_k_t.f_a + this.var_int_u / this.var_k_t.f_c;
+    n2 = this.var_k_t.f_a + Math.floor(this.var_int_u / this.var_k_t.f_c);
     if (n2 <= this.var_k_t.f_a + this.var_k_t.f_b - 1) break;
     n2 = this.var_k_t.f_a;
     this.var_int_u = 0;
     break;
     }
     case 3: {
-    n2 = this.var_k_u.f_a + this.var_int_u / this.var_k_u.f_c;
+    n2 = this.var_k_u.f_a + Math.floor(this.var_int_u / this.var_k_u.f_c);
     if (n2 <= this.var_k_u.f_a + this.var_k_u.f_b - 1) break;
     n2 = this.var_k_u.f_a;
     this.var_int_u = 0;
@@ -187,7 +187,7 @@ export class q extends i {
     if (this.var_boolean_j) {
     this.f_e = 5;
     this.j();
-    this.var_h_a.f_c = this.f_d.f_a;
+    this.var_h_a.f_c = this.var_k_d.f_a;
     }
     }
     
@@ -202,8 +202,8 @@ export class q extends i {
     }
     if (this.f_e == 6) {
     i.var_n_a.var_r_a.d(this.var_int_b, this.var_int_d, 0);
-    if (this.a(this.f_q)) {
-    this.var_h_a.f_c = this.f_q.f_a + this.f_q.f_b - 1;
+    if (this.a(this.var_k_q)) {
+    this.var_h_a.f_c = this.var_k_q.f_a + this.var_k_q.f_b - 1;
     i.var_n_a.var_boolean_k = true;
     i.var_n_a.var_boolean_j = true;
     return;
@@ -225,19 +225,19 @@ export class q extends i {
     i.var_n_a.var_r_a.void_a(this.var_int_b + 1, this.var_int_d);
     i.var_n_a.var_r_a.void_a(this.var_int_b + 1, this.var_int_d + 1);
     if (this.var_boolean_i) {
-    if (this.a(this.f_n)) {
-    this.var_h_a.f_c = this.f_n.f_a + this.f_n.f_b - 1;
+    if (this.a(this.var_k_n)) {
+    this.var_h_a.f_c = this.var_k_n.f_a + this.var_k_n.f_b - 1;
     i.var_n_a.var_boolean_j = true;
     return;
     }
     } else if (this.var_boolean_j) {
-    if (this.a(this.f_p)) {
-    this.var_h_a.f_c = this.f_p.f_a + this.f_p.f_b - 1;
+    if (this.a(this.var_k_p)) {
+    this.var_h_a.f_c = this.var_k_p.f_a + this.var_k_p.f_b - 1;
     i.var_n_a.var_boolean_j = true;
     return;
     }
-    } else if (this.a(this.f_o)) {
-    this.var_h_a.f_c = this.f_o.f_a + this.f_o.f_b - 1;
+    } else if (this.a(this.var_k_o)) {
+    this.var_h_a.f_c = this.var_k_o.f_a + this.var_k_o.f_b - 1;
     i.var_n_a.var_boolean_j = true;
     return;
     }
@@ -257,14 +257,14 @@ export class q extends i {
     this.f_e = 3;
     this.j();
     if (this.var_boolean_i) {
-    this.var_h_a.f_c = this.f_n.f_a;
+    this.var_h_a.f_c = this.var_k_n.f_a;
     return;
     }
     if (this.var_boolean_j) {
-    this.var_h_a.f_c = this.f_d.f_a;
+    this.var_h_a.f_c = this.var_k_d.f_a;
     return;
     }
-    this.var_h_a.f_c = this.f_o.f_a;
+    this.var_h_a.f_c = this.var_k_o.f_a;
     return;
     }
     if (this.var_int_s > 0) {
@@ -275,7 +275,7 @@ export class q extends i {
     }
     if ((i.var_n_a.var_r_a.f_e[this.var_int_b][this.var_int_d] & 0x20) != 0) {
     this.f_e = 6;
-    this.var_h_a.f_c = this.f_q.f_a;
+    this.var_h_a.f_c = this.var_k_q.f_a;
     i.var_n_a.var_t_a.f();
     if (!i.var_n_a.var_boolean_l) {
     i.var_n_a.var_t_a.var_a_a.void_a();
@@ -367,14 +367,14 @@ export class q extends i {
     this.f_e = 3;
     this.j();
     if (this.var_boolean_i) {
-    this.var_h_a.f_c = this.f_n.f_a;
+    this.var_h_a.f_c = this.var_k_n.f_a;
     return;
     }
     if (this.var_boolean_j) {
-    this.var_h_a.f_c = this.f_d.f_a;
+    this.var_h_a.f_c = this.var_k_d.f_a;
     return;
     }
-    this.var_h_a.f_c = this.f_o.f_a;
+    this.var_h_a.f_c = this.var_k_o.f_a;
     return;
     }
     if ((c2 & 0x20) != 0) {
@@ -436,7 +436,7 @@ export class q extends i {
     break;
     }
     case 3: {
-    this.a(this.f_m);
+    this.a(this.var_k_m);
     }
     }
     } else if (this.f_e == 1) {
@@ -473,7 +473,7 @@ export class q extends i {
     this.var_h_a.f_c = 101;
     break;
     }
-    this.a(this.f_c);
+    this.a(this.var_k_c);
     break;
     }
     case 2: {
@@ -481,7 +481,7 @@ export class q extends i {
     this.var_h_a.f_c = 102;
     break;
     }
-    this.a(this.f_d);
+    this.a(this.var_k_d);
     break;
     }
     case 3: {
@@ -563,28 +563,14 @@ export class q extends i {
     }
 
     a(...args) {
-        const len = args.length;
-        // Search available overload functions
-        for (let idx = 0; idx < 12; idx++) {
-            const fn = this[`_a_${idx}`];
-            if (fn && fn.length === len) {
-                return fn.apply(this, args);
-            }
-        }
-        // Fallback to first overload if found
-        if (this[`_a_0`]) return this[`_a_0`].apply(this, args);
+        if (args.length === 0) return q.prototype._a_1.apply(this, args);
+        if (args.length === 3) return q.prototype._a_0.apply(this, args);
+        return q.prototype._a_1.apply(this, args);
     }
 
     b(...args) {
-        const len = args.length;
-        // Search available overload functions
-        for (let idx = 0; idx < 12; idx++) {
-            const fn = this[`_b_${idx}`];
-            if (fn && fn.length === len) {
-                return fn.apply(this, args);
-            }
-        }
-        // Fallback to first overload if found
-        if (this[`_b_0`]) return this[`_b_0`].apply(this, args);
+        if (args.length === 0) return q.prototype._b_0.apply(this, args);
+        if (args.length === 2) return q.prototype._b_1.apply(this, args);
+        return q.prototype._b_0.apply(this, args);
     }
 }

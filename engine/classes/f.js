@@ -128,13 +128,14 @@ export class f extends l {
     while (n4 < string.length) {
     let bl = false;
     if (n7 < string.length) {
-    if (string.charCodeAt(n7) == '|') {
+    let code = string.charCodeAt(n7);
+    if (code === 124) {
     bl = true;
     }
-    if (string.charCodeAt(n7) == ' ') {
+    if (code === 32) {
     n6 = n7;
     }
-    n8 += e.a(n3, string.charCodeAt(n7)) + e.var_byte_arr_b[n3];
+    n8 += e.a(n3, code) + e.var_byte_arr_b[n3];
     }
     if (n8 > n2 || bl || n7 >= string.length) {
     n5 = n7;

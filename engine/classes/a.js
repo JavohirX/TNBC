@@ -204,7 +204,7 @@ export class a {
     }
     
     _java_lang_String_a_0(n2) {
-    let n3 = n2 / 60;
+    let n3 = Math.floor(n2 / 60);
     let n4 = n2 % 60;
     if (n4 < 10) {
     return n3 + ":0" + n4;

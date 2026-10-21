@@ -450,10 +450,10 @@ export class i extends l {
     this.f_i = 2;
     if ((this.var_char_b & 2) == 0 && (i.var_n_a.var_r_a.int_b(this.var_int_a, this.var_int_c) == 1024 || i.var_n_a.var_r_a.int_b(this.var_int_a, this.var_int_c) == 256 || i.var_n_a.var_r_a.int_b(this.var_int_a, this.var_int_c) == 2048 || i.var_n_a.var_r_a.int_b(this.var_int_a, this.var_int_c) == 512)) {
     this.f_e = 4;
-    this.f_g = t.var_int_c * 100 / this.f_n;
+    this.f_g = Math.floor(t.var_int_c * 100 / this.f_n);
     } else {
     this.f_e = 1;
-    this.f_g = t.var_int_c * 100 / this.f_m;
+    this.f_g = Math.floor(t.var_int_c * 100 / this.f_m);
     if (this.var_int_a < n2) {
     this.f_o = 1;
     } else if (this.var_int_a > n2) {
@@ -489,8 +489,8 @@ export class i extends l {
     void_a(n2, n3) {
     this.f_k = n2;
     this.f_l = n3;
-    this.var_h_a.f_a = n2 / 100;
-    this.var_h_a.f_b = n3 / 100;
+    this.var_h_a.f_a = Math.floor(n2 / 100);
+    this.var_h_a.f_b = Math.floor(n3 / 100);
     }
     
     c() {
@@ -851,7 +851,7 @@ export class i extends l {
     _a_2(k2) {
     let bl = false;
     if (k2.f_c != 0 && this.f_p % k2.f_c == 0) {
-    let n2 = k2.f_a + this.f_p / k2.f_c;
+    let n2 = k2.f_a + Math.floor(this.f_p / k2.f_c);
     if (n2 > k2.f_a + k2.f_b - 1) {
     n2 = k2.f_a;
     this.j();
@@ -1086,15 +1086,8 @@ export class i extends l {
     }
 
     b(...args) {
-        const len = args.length;
-        // Search available overload functions
-        for (let idx = 0; idx < 12; idx++) {
-            const fn = this[`_b_${idx}`];
-            if (fn && fn.length === len) {
-                return fn.apply(this, args);
-            }
-        }
-        // Fallback to first overload if found
-        if (this[`_b_0`]) return this[`_b_0`].apply(this, args);
+        if (args.length === 0) return i.prototype._b_0.apply(this, args);
+        if (args.length === 2) return i.prototype._b_1.apply(this, args);
+        return i.prototype._b_0.apply(this, args);
     }
 }

@@ -19,13 +19,13 @@ export class g {
     boolean_a() {
     if (this.var_int_b < this.var_int_a - 1 && this.var_int_b > -1) {
     ++this.var_int_b;
-    this.var_i_a = this.var_i_a.var_i_b;
-    return true;
+    this.var_i_a = this.var_i_a ? this.var_i_a.var_i_b : null;
+    return this.var_i_a != null;
     }
-    if (this.var_int_b == -1) {
+    if (this.var_int_b == -1 && this.var_int_a > 0) {
     ++this.var_int_b;
     this.var_i_a = this.var_i_b;
-    return true;
+    return this.var_i_a != null;
     }
     return false;
     }
