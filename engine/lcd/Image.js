@@ -1,12 +1,16 @@
 /**
  * Image.js
  * Implements javax.microedition.lcdui.Image backed by HTML5 Canvas / HTMLImageElement.
+ * Synchronous decoding via PNGDecoder.
  */
 import { Graphics } from "./Graphics.js";
+import { decodePNG } from "./PNGDecoder.js";
 
 export class Image {
+    static _preloadedImages = new Map();
+
     /**
-     * @param {HTMLCanvasElement | HTMLImageElement | ImageBitmap} source
+     * @param {HTMLCanvasElement | HTMLImageElement | ImageBitmap | Object} source
      */
     constructor(source) {
         this.source = source;
@@ -25,7 +29,7 @@ export class Image {
 
     getGraphics() {
         if (!this._graphics) {
-            if (!(this.source instanceof HTMLCanvasElement)) {
+            if (typeof document !== 'undefined' && !(this.source instanceof HTMLCanvasElement)) {
                 // If it's an ImageElement, convert to Canvas so it's mutable
                 const canvas = document.createElement("canvas");
                 canvas.width = this.width;
@@ -34,13 +38,18 @@ export class Image {
                 ctx.drawImage(this.source, 0, 0);
                 this.source = canvas;
             }
-            const ctx = this.source.getContext("2d", { willReadFrequently: true });
-            this._graphics = new Graphics(ctx, this.width, this.height);
+            if (this.source && this.source.getContext) {
+                const ctx = this.source.getContext("2d", { willReadFrequently: true });
+                this._graphics = new Graphics(ctx, this.width, this.height);
+            } else {
+                this._graphics = new Graphics(null, this.width, this.height);
+            }
         }
         return this._graphics;
     }
 
     getRGB(rgbData, offset, scanlength, x, y, width, height) {
+        if (typeof document === 'undefined') return;
         let canvas;
         if (this.source instanceof HTMLCanvasElement) {
             canvas = this.source;
@@ -69,17 +78,59 @@ export class Image {
         }
     }
 
-    /**
-     * Creates an empty mutable image with given dimensions.
-     */
-    static createImage(width, height) {
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d", { willReadFrequently: true });
-        ctx.fillStyle = "#000000";
-        ctx.fillRect(0, 0, width, height);
-        return new Image(canvas);
+    static cacheImage(path, img) {
+        Image._preloadedImages.set(path, img);
+        if (!path.startsWith('/')) Image._preloadedImages.set('/' + path, img);
+        else Image._preloadedImages.set(path.substring(1), img);
+    }
+
+    static createImage(...args) {
+        if (args.length === 1 && typeof args[0] === 'string') {
+            const path = args[0];
+            const cached = Image._preloadedImages.get(path) || 
+                           Image._preloadedImages.get('/' + path) || 
+                           Image._preloadedImages.get(path.startsWith('/') ? path.substring(1) : path);
+            if (cached) return cached;
+            if (typeof ResourceManager !== 'undefined' && ResourceManager.getResourceBytes) {
+                const bytes = ResourceManager.getResourceBytes(path);
+                if (bytes && bytes.length > 0) {
+                    const decoded = decodePNG(bytes);
+                    const img = new Image(decoded.canvas || decoded);
+                    Image.cacheImage(path, img);
+                    return img;
+                }
+            }
+            console.warn("createImage: Image not found in cache:", path);
+            return Image.createImage(32, 32);
+        }
+
+        if (args.length === 2 && typeof args[0] === 'number') {
+            const [width, height] = args;
+            if (typeof document !== 'undefined' && document.createElement) {
+                const canvas = document.createElement("canvas");
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d", { willReadFrequently: true });
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(0, 0, width, height);
+                return new Image(canvas);
+            }
+            return new Image({ width, height });
+        }
+
+        if (args[0] instanceof Uint8Array || args[0] instanceof Int8Array || Array.isArray(args[0]) || (args[0] && args[0].buffer)) {
+            const rawBytes = args[0] instanceof Uint8Array ? args[0] : new Uint8Array(args[0].buffer || args[0]);
+            const offset = args[1] !== undefined ? args[1] : 0;
+            const length = args[2] !== undefined ? args[2] : (rawBytes.length - offset);
+            const decoded = decodePNG(rawBytes, offset, length);
+            return new Image(decoded.canvas || decoded);
+        }
+
+        if (args.length >= 5 && args[0] instanceof Image) {
+            return Image.createImageRegion(args[0], args[1], args[2], args[3], args[4], args[5] || 0);
+        }
+
+        return Image.createImage(32, 32);
     }
 
     /**
@@ -89,6 +140,10 @@ export class Image {
      */
     static async loadFromUrl(url) {
         return new Promise((resolve, reject) => {
+            if (typeof window === 'undefined') {
+                resolve(new Image({ width: 32, height: 32 }));
+                return;
+            }
             const img = new window.Image();
             img.crossOrigin = "anonymous";
             img.onload = () => resolve(new Image(img));
@@ -98,31 +153,12 @@ export class Image {
     }
 
     /**
-     * Creates an image synchronously or asynchronously from byte array (PNG/JPEG).
-     * @param {Uint8Array} bytes
-     * @param {number} offset
-     * @param {number} length
-     * @returns {Promise<Image>}
-     */
-    static async createImageFromBytes(bytes, offset = 0, length = null) {
-        const len = length !== null ? length : bytes.length - offset;
-        const slice = bytes.subarray(offset, offset + len);
-        const blob = new Blob([slice], { type: "image/png" });
-        const url = URL.createObjectURL(blob);
-        try {
-            const img = await Image.loadFromUrl(url);
-            URL.revokeObjectURL(url);
-            return img;
-        } catch (e) {
-            URL.revokeObjectURL(url);
-            throw e;
-        }
-    }
-
-    /**
      * Sub-region image extraction with optional transformation.
      */
     static createImageRegion(image, x, y, width, height, transform = 0) {
+        if (typeof document === 'undefined') {
+            return new Image({ width, height });
+        }
         const canvas = document.createElement("canvas");
         const isRotated = transform === 5 || transform === 6 || transform === 7 || transform === 4;
         canvas.width = isRotated ? height : width;
@@ -168,10 +204,11 @@ export class Image {
                 break;
         }
 
-        ctx.drawImage(image.source, x, y, width, height, 0, 0, width, height);
+        if (image.source) {
+            ctx.drawImage(image.source, x, y, width, height, 0, 0, width, height);
+        }
         ctx.restore();
 
         return new Image(canvas);
     }
 }
-

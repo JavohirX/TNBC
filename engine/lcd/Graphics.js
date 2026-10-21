@@ -117,6 +117,30 @@ export class Graphics {
         this.ctx.fill();
     }
 
+    fillArc(x, y, width, height, startAngle, arcAngle) {
+        this.ctx.beginPath();
+        const cx = x + width / 2;
+        const cy = y + height / 2;
+        const rx = width / 2;
+        const ry = height / 2;
+        const sa = -startAngle * Math.PI / 180;
+        const ea = -(startAngle + arcAngle) * Math.PI / 180;
+        this.ctx.ellipse(cx, cy, rx, ry, 0, sa, ea, true);
+        this.ctx.fill();
+    }
+
+    drawArc(x, y, width, height, startAngle, arcAngle) {
+        this.ctx.beginPath();
+        const cx = x + width / 2;
+        const cy = y + height / 2;
+        const rx = width / 2;
+        const ry = height / 2;
+        const sa = -startAngle * Math.PI / 180;
+        const ea = -(startAngle + arcAngle) * Math.PI / 180;
+        this.ctx.ellipse(cx, cy, rx, ry, 0, sa, ea, true);
+        this.ctx.stroke();
+    }
+
     drawString(str, x, y, anchor = 20) {
         if (!str) return;
         this.ctx.save();

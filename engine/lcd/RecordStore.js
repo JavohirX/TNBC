@@ -49,7 +49,7 @@ export class RecordStore {
     getRecord(id) {
         const rec = this.records[id];
         if (!rec) return null;
-        return rec.slice(0); // return copy
+        return new Int8Array(rec.buffer, rec.byteOffset, rec.byteLength);
     }
 
     setRecord(id, data, offset = 0, numBytes = null) {

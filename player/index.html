@@ -548,8 +548,8 @@
                     <div class="progress-bar-wrap">
                         <div id="progress-bar-fill"></div>
                     </div>
-                    <div id="loading-timer">Booting JVM... (0s)</div>
-                    <div id="loading-subtext" style="font-size: 0.76em; color: #94a3b8; margin-top: 8px; max-width: 280px; line-height: 1.4;">First launch compiles WebAssembly runtime (~45-60s). Subsequent launches will load instantly from browser cache.</div>
+                    <div id="loading-timer">Booting Pure Native Engine... (0.0s)</div>
+                    <div id="loading-subtext" style="font-size: 0.76em; color: #94a3b8; margin-top: 8px; max-width: 280px; line-height: 1.4;">100% Pure Native JavaScript &bull; Instant Launch &bull; Authentic Living Mobile 2005 Engine</div>
                 </div>
             </div>
         </div>
@@ -638,9 +638,16 @@
         </div>
     </div>
 
-    <!-- CheerpJ WebAssembly Java Runtime -->
-    <script src="https://cjrtnc.leaningtech.com/20260317_2978/loader.js"></script>
-    <!-- Application Logic -->
-    <script type="module" src="src/main.js"></script>
+    <!-- 100% Pure Native JavaScript Engine Entrypoint -->
+    <script type="module">
+        window.addEventListener('error', (e) => console.error("Global Error:", e.message, e.filename, e.lineno, e.error));
+        window.addEventListener('unhandledrejection', (e) => console.error("Unhandled Rejection:", e.reason));
+
+        import { startNativeEngine } from '../engine/main.js';
+        startNativeEngine('../assets/').catch(err => {
+            console.error("Engine Start Error:", err);
+            window.__lastErr = err.message + '\n' + err.stack;
+        });
+    </script>
 </body>
 </html>

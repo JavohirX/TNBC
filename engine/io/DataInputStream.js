@@ -30,6 +30,27 @@ export class DataInputStream {
         return val;
     }
 
+    read(...args) {
+        if (args.length === 0) {
+            if (this.pos >= this.byteLength) return -1;
+            return this.readUnsignedByte();
+        }
+        const target = args[0];
+        const offset = args[1] !== undefined ? args[1] : 0;
+        const length = args[2] !== undefined ? args[2] : (target.length - offset);
+        const available = this.byteLength - this.pos;
+        if (available <= 0) return -1;
+        const toRead = Math.min(length, available);
+        const src = new Uint8Array(this.buffer, this.byteOffset + this.pos, toRead);
+        target.set(src, offset);
+        this.pos += toRead;
+        return toRead;
+    }
+
+    skip(n) {
+        return this.skipBytes(Number(n));
+    }
+
     readUnsignedByte() {
         if (this.pos >= this.byteLength) throw new Error("EOF reached in readUnsignedByte");
         const val = this.view.getUint8(this.pos);
@@ -94,6 +115,14 @@ export class DataInputStream {
             }
         }
         return str;
+    }
+
+    readBoolean() {
+        return this.readByte() !== 0;
+    }
+
+    readChar() {
+        return this.readUnsignedShort();
     }
 
     available() {
