@@ -186,8 +186,11 @@ function toggleMute() {
 }
 
 async function init() {
+    console.log('[App] init() started. cheerpjWebRoot =', cheerpjWebRoot);
     const loadingEl = document.getElementById("loading-text");
+    const loadingSubtext = document.getElementById("loading-subtext");
     if (loadingEl) loadingEl.textContent = "Loading WebAssembly Runtime...";
+    if (loadingSubtext) loadingSubtext.textContent = "Downloading CheerpJ JVM (~20MB on initial run)...";
 
     display = document.getElementById('display');
     screenCtx = display.getContext('2d');
@@ -196,6 +199,7 @@ async function init() {
     setListeners();
     setupToolbar();
 
+    console.log('[App] Initializing LibMidi...');
     audioContext = createUnlockingAudioContext();
     window.libmidi = new LibMidi(audioContext);
     await window.libmidi.init();
@@ -203,79 +207,109 @@ async function init() {
     window.libmedia = new LibMedia();
 
     if (loadingEl) loadingEl.textContent = "Starting J2ME Engine...";
+    if (loadingSubtext) loadingSubtext.textContent = "Initializing WebAssembly runtime...";
+    console.log('[App] Calling cheerpjInit...');
 
-    await cheerpjInit({
-        enableDebug: false,
-        natives: {
-            ...canvasFontNatives,
-            ...canvasGraphicsNatives,
-            ...gles2Natives,
-            ...jsReferenceNatives,
-            ...mediaBridgeNatives,
-            ...midiBridgeNatives,
-            async Java_pl_zb3_freej2me_bridge_shell_Shell_setTitle(lib, title) {
-                document.title = title;
-            },
-            async Java_pl_zb3_freej2me_bridge_shell_Shell_setIcon(lib, iconBytes) {},
-            async Java_pl_zb3_freej2me_bridge_shell_Shell_getScreenCtx(lib) {
-                return screenCtx;
-            },
-            async Java_pl_zb3_freej2me_bridge_shell_Shell_setCanvasSize(lib, width, height) {
-                if (!isReady) {
-                    const splash = document.getElementById('splash-screen');
-                    if (splash) splash.style.display = 'none';
-                    display.style.display = 'block';
-                    isReady = true;
-                    display.focus();
-                }
-                screenCtx.canvas.width = width;
-                screenCtx.canvas.height = height;
-            },
-            async Java_pl_zb3_freej2me_bridge_shell_Shell_waitForAndDispatchEvents(lib, listener) {
-                const KeyEvent = await lib.pl.zb3.freej2me.bridge.shell.KeyEvent;
-                const PointerEvent = await lib.pl.zb3.freej2me.bridge.shell.PointerEvent;
+    try {
+        await cheerpjInit({
+            enableDebug: true,
+            natives: {
+                ...canvasFontNatives,
+                ...canvasGraphicsNatives,
+                ...gles2Natives,
+                ...jsReferenceNatives,
+                ...mediaBridgeNatives,
+                ...midiBridgeNatives,
+                async Java_pl_zb3_freej2me_bridge_shell_Shell_setTitle(lib, title) {
+                    document.title = title;
+                },
+                async Java_pl_zb3_freej2me_bridge_shell_Shell_setIcon(lib, iconBytes) {},
+                async Java_pl_zb3_freej2me_bridge_shell_Shell_getScreenCtx(lib) {
+                    return screenCtx;
+                },
+                async Java_pl_zb3_freej2me_bridge_shell_Shell_setCanvasSize(lib, width, height) {
+                    console.log('[App] setCanvasSize called:', width, height);
+                    if (!isReady) {
+                        const splash = document.getElementById('splash-screen');
+                        if (splash) splash.style.display = 'none';
+                        display.style.display = 'block';
+                        isReady = true;
+                        display.focus();
+                    }
+                    screenCtx.canvas.width = width;
+                    screenCtx.canvas.height = height;
+                },
+                async Java_pl_zb3_freej2me_bridge_shell_Shell_waitForAndDispatchEvents(lib, listener) {
+                    const KeyEvent = await lib.pl.zb3.freej2me.bridge.shell.KeyEvent;
+                    const PointerEvent = await lib.pl.zb3.freej2me.bridge.shell.PointerEvent;
 
-                const evt = await evtQueue.waitForEvent();
-                if (evt.kind === 'keydown') {
-                    await listener.keyPressed(await new KeyEvent(...evt.args));
-                } else if (evt.kind === 'keyup') {
-                    await listener.keyReleased(await new KeyEvent(...evt.args));
-                } else if (evt.kind === 'pointerpressed') {
-                    await listener.pointerPressed(await new PointerEvent(evt.x, evt.y));
-                } else if (evt.kind === 'pointerdragged') {
-                    await listener.pointerDragged(await new PointerEvent(evt.x, evt.y));
-                } else if (evt.kind === 'pointerreleased') {
-                    await listener.pointerReleased(await new PointerEvent(evt.x, evt.y));
-                } else if (evt.kind === 'player-eom') {
-                    await listener.playerEOM(evt.player);
-                } else if (evt.kind === 'player-video-frame') {
-                    await listener.playerVideoFrame(evt.player);
+                    const evt = await evtQueue.waitForEvent();
+                    if (evt.kind === 'keydown') {
+                        await listener.keyPressed(await new KeyEvent(...evt.args));
+                    } else if (evt.kind === 'keyup') {
+                        await listener.keyReleased(await new KeyEvent(...evt.args));
+                    } else if (evt.kind === 'pointerpressed') {
+                        await listener.pointerPressed(await new PointerEvent(evt.x, evt.y));
+                    } else if (evt.kind === 'pointerdragged') {
+                        await listener.pointerDragged(await new PointerEvent(evt.x, evt.y));
+                    } else if (evt.kind === 'pointerreleased') {
+                        await listener.pointerReleased(await new PointerEvent(evt.x, evt.y));
+                    } else if (evt.kind === 'player-eom') {
+                        await listener.playerEOM(evt.player);
+                    } else if (evt.kind === 'player-video-frame') {
+                        await listener.playerVideoFrame(evt.player);
+                    }
+                },
+                async Java_pl_zb3_freej2me_bridge_shell_Shell_restart(lib) {
+                    location.reload();
+                },
+                async Java_pl_zb3_freej2me_bridge_shell_Shell_exit(lib) {
+                    location.reload();
+                },
+                async Java_pl_zb3_freej2me_bridge_shell_Shell_say(lib, sth) {
+                    console.log('[FreeJ2ME]', sth);
                 }
-            },
-            async Java_pl_zb3_freej2me_bridge_shell_Shell_restart(lib) {
-                location.reload();
-            },
-            async Java_pl_zb3_freej2me_bridge_shell_Shell_exit(lib) {
-                location.reload();
-            },
-            async Java_pl_zb3_freej2me_bridge_shell_Shell_say(lib, sth) {
-                console.log('[FreeJ2ME]', sth);
             }
-        }
-    });
+        });
+        console.log('[App] cheerpjInit() resolved successfully!');
+    } catch (e) {
+        console.error('[App] cheerpjInit() failed:', e);
+        if (loadingEl) loadingEl.textContent = "CheerpJ Init Error: " + e.message;
+        return;
+    }
 
-    if (loadingEl) loadingEl.textContent = "Loading Nightmare Before Christmas...";
+    if (loadingEl) loadingEl.textContent = "Compiling FreeJ2ME Engine...";
+    if (loadingSubtext) loadingSubtext.textContent = "JIT compiling bytecode into WebAssembly (~30-60s on first run)...";
+    const jarLibPath = cheerpjWebRoot + "/freej2me-web.jar";
+    console.log('[App] Calling cheerpjRunLibrary on:', jarLibPath);
 
-    const lib = await cheerpjRunLibrary(cheerpjWebRoot + "/freej2me-web.jar");
-    const FreeJ2ME = await lib.org.recompile.freej2me.FreeJ2ME;
+    let lib;
+    try {
+        lib = await cheerpjRunLibrary(jarLibPath);
+        console.log('[App] cheerpjRunLibrary resolved!');
+        if (loadingEl) loadingEl.textContent = "Starting Game...";
+        if (loadingSubtext) loadingSubtext.textContent = "Loading Nightmare Before Christmas assets...";
+    } catch (e) {
+        console.error('[App] cheerpjRunLibrary failed:', e);
+        if (loadingEl) loadingEl.textContent = "Library Load Error: " + e.message;
+        return;
+    }
 
-    const jarPath = cheerpjWebRoot + "/jar/" + (sp.get('jar') || "The_Nightmare_Before_Christmas.jar");
-    console.log('[App] Launching JAR:', jarPath);
+    try {
+        const FreeJ2ME = await lib.org.recompile.freej2me.FreeJ2ME;
+        const gameJar = sp.get('jar') || "The_Nightmare_Before_Christmas.jar";
+        const gamePath = cheerpjWebRoot + "/jar/" + gameJar;
+        console.log('[App] Launching FreeJ2ME.main with:', gamePath);
 
-    FreeJ2ME.main(['jar', jarPath]).catch(e => {
-        console.error('[App] Error in MIDlet execution:', e);
-        if (loadingEl) loadingEl.textContent = "Error loading game.";
-    });
+        FreeJ2ME.main(['jar', gamePath]).then(() => {
+            console.log('[App] FreeJ2ME.main returned successfully');
+        }).catch(e => {
+            console.error('[App] Error in FreeJ2ME.main execution:', e);
+            if (loadingEl) loadingEl.textContent = "Execution Error: " + e;
+        });
+    } catch (e) {
+        console.error('[App] Error starting FreeJ2ME class:', e);
+    }
 }
 
 // Initial audio unlocking banner on first click

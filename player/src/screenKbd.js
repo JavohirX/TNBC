@@ -19,7 +19,10 @@ function activateKey(keyEl) {
         keyEl.classList.add('active');
         triggerHaptic();
         if (handleKey && keyEl.dataset.key) {
-            handleKey(true, keyEl.dataset.key);
+            const keys = keyEl.dataset.key.split(',');
+            for (const k of keys) {
+                handleKey(true, k.trim());
+            }
         }
     }
 }
@@ -28,7 +31,10 @@ function deactivateKey(keyEl) {
     if (keyEl && keyEl.classList.contains('active')) {
         keyEl.classList.remove('active');
         if (handleKey && keyEl.dataset.key) {
-            handleKey(false, keyEl.dataset.key);
+            const keys = keyEl.dataset.key.split(',');
+            for (const k of keys) {
+                handleKey(false, k.trim());
+            }
         }
     }
 }

@@ -63,13 +63,43 @@ In earlier web ports and emulators, audio frequently got damaged (distorted, scr
 
 ---
 
-## 4. How to Run
+## 4. How to Run Locally
 
 1. Open PowerShell or Terminal in this folder:
    ```powershell
    python run_server.py
    ```
 2. Your default web browser will automatically open:
-   `http://localhost:8080/player/`
+   - **Full Game (CheerpJ Player)**: `http://localhost:8080/player/`
+   - **Pure JS Engine Runner (0ms Cold Load)**: `http://localhost:8080/engine/test_runner.html`
 3. To play on your smartphone on the same Wi-Fi network:
    Open the network IP printed in the terminal (e.g. `http://192.168.x.x:8080/player/`).
+
+---
+
+## 5. Instant Online Deployment (GitHub Pages / Vercel)
+
+This repository is pre-configured for automated 1-click cloud hosting:
+
+1. **GitHub Pages (Automated CI/CD)**:
+   - Push this repo to your GitHub account (`git remote add origin <url>`, `git push -u origin master`).
+   - The included workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) will automatically build and publish the game to GitHub Pages:
+     `https://<your-username>.github.io/<repo-name>/`
+   - Ensure in your GitHub Repo Settings: **Settings ➔ Pages ➔ Source** is set to **GitHub Actions**.
+
+2. **Vercel / Cloudflare Pages**:
+   - Zero-config static deployment via [`vercel.json`](vercel.json). Import the repository directly in Vercel and click Deploy.
+
+3. **Install as Mobile App (PWA)**:
+   - The game includes [`player/manifest.json`](player/manifest.json). Open the deployed URL on Safari (iOS) or Chrome (Android) and tap **"Add to Home Screen"** to play as an edge-to-edge standalone app.
+
+---
+
+## 6. Pure JavaScript / Canvas 2D Engine
+
+To eliminate the 30–60s CheerpJ compile time, a native HTML5 Canvas 2D engine is being constructed under [`engine/`](engine/):
+- **[`engine/lcd/Graphics.js`](engine/lcd/Graphics.js)**: 1:1 Canvas 2D implementation of Nokia/MIDP `javax.microedition.lcdui.Graphics` (clipping, blitting, anchors, region transforms).
+- **[`engine/lcd/Image.js`](engine/lcd/Image.js)**: Fast bitmap cache with pixel manipulation.
+- **[`engine/lcd/RecordStore.js`](engine/lcd/RecordStore.js)**: `localStorage` RMS persistent storage.
+- **[`engine/io/DataInputStream.js`](engine/io/DataInputStream.js)**: Zero-copy big-endian binary decoder for `levels.mar` and font tables.
+- **[`engine/test_runner.html`](engine/test_runner.html)**: Interactive room viewer & sprite animator demonstrating 60 FPS, 0ms startup time.
