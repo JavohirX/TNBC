@@ -661,7 +661,7 @@ export class t extends FullCanvas {
     D() {
     /* gc */
     try {
-    this.var_javax_microedition_lcdui_Image_d = Image.createImage("/splash.png");
+    this.var_javax_microedition_lcdui_Image_d = null;
     this.var_javax_microedition_lcdui_Image_e = Image.createImage("/mDisneyLogo.png");
     this.var_javax_microedition_lcdui_Image_h = Image.createImage("/softKeys.png");
     /* gc */

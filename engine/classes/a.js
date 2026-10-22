@@ -584,7 +584,7 @@ export class a {
     break;
     }
     case -2: {
-    this.var_t_a.var_javax_microedition_lcdui_Image_c = this.var_t_a.var_javax_microedition_lcdui_Image_d;
+    this.var_t_a.var_javax_microedition_lcdui_Image_c = null;
     break;
     }
     case -1: {

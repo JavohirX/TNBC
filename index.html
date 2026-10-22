@@ -18,7 +18,8 @@
 </head>
 <body>
     <script>
-        const target = 'player/index.html' + location.search + location.hash;
+        const search = location.search || '?v=20261022_b15';
+        const target = 'player/index.html' + search + location.hash;
         location.replace(target);
     </script>
 </body>

@@ -44,7 +44,7 @@ async def handle_start(message: types.Message):
             [
                 InlineKeyboardButton(
                     text="🎮 Play The Nightmare Before Christmas",
-                    web_app=WebAppInfo(url=f"{player_base}/")
+                    web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b15")
                 )
             ]
         ]
@@ -55,16 +55,6 @@ async def handle_start(message: types.Message):
         "Authentic 2005 Living Mobile J2ME classic running on a 100% native ES6 browser engine with tactile 3D retro phone keypad, true sound synthesis, and original pixel art.\n\n"
         "Tap the button below to launch instantly!"
     )
-
-    try:
-        # If splash asset exists, send with photo banner
-        splash_path = os.path.join(os.path.dirname(__file__), "assets", "splash.png")
-        if os.path.exists(splash_path):
-            photo = types.FSInputFile(splash_path)
-            await message.answer_photo(photo=photo, caption=caption, parse_mode="HTML", reply_markup=kb)
-            return
-    except Exception as e:
-        logging.warning(f"Could not send photo: {e}")
 
     await message.answer(caption, parse_mode="HTML", reply_markup=kb)
 
@@ -80,7 +70,7 @@ async def handle_play(message: types.Message):
             [
                 InlineKeyboardButton(
                     text="🎮 Play Now",
-                    web_app=WebAppInfo(url=f"{player_base}/")
+                    web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b15")
                 )
             ]
         ]
@@ -91,10 +81,12 @@ async def handle_play(message: types.Message):
 async def main():
     # Configure bot persistent menu button next to the keyboard
     try:
+        base_url = WEBAPP_URL.rstrip('/')
+        player_base = base_url if base_url.endswith("/player") else f"{base_url}/player"
         await bot.set_chat_menu_button(
             menu_button=MenuButtonWebApp(
                 text="🎮 Play Game",
-                web_app=WebAppInfo(url=WEBAPP_URL)
+                web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b15")
             )
         )
         logging.info("Telegram persistent Menu Button configured successfully.")

@@ -124,11 +124,11 @@
         }
 
         .progress-bar-wrap {
-            width: 280px;
-            max-width: 80vw;
-            height: 16px;
+            width: 320px;
+            max-width: 85vw;
+            height: 18px;
             background: #000000;
-            border: 2px solid #ff7518;
+            border: 3px solid #ff7518;
             border-radius: 0;
             margin: 0;
             overflow: hidden;
@@ -588,7 +588,7 @@
         window.addEventListener('click', ensureExpandedOnGesture, { passive: true });
 
         // Explicit cache buster to guarantee fresh asset loading across mobile/TMA webviews
-        const APP_BUILD_HASH = "v20261022_b14";
+        const APP_BUILD_HASH = "v20261022_b15";
         import(`../engine/main.js?v=${APP_BUILD_HASH}`).then(({ startNativeEngine }) => {
             return startNativeEngine(`../assets/`, APP_BUILD_HASH);
         }).catch(err => {
