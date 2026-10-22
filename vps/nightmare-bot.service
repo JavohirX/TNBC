@@ -1,0 +1,16 @@
+[Unit]
+Description=Nightmare Before Christmas Telegram Bot
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/nightmare
+EnvironmentFile=/var/www/nightmare/.env
+ExecStart=/var/www/nightmare/venv/bin/python bot.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+

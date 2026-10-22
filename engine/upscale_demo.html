@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Upscaling & Nokia LCD Filter Demo - Nightmare Before Christmas</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #08090f;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+        }
+
+        header {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            color: #f59e0b;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        p.subhead {
+            font-size: 0.88rem;
+            color: #94a3b8;
+            line-height: 1.4;
+        }
+
+        /* --- MAIN DEMO STAGE --- */
+        #demo-stage {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 900px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        /* SCREEN CONTAINER (3:4 ASPECT) */
+        .viewport-box {
+            position: relative;
+            width: 320px;
+            height: 426px; /* 320 * (4/3) = ~426px (3:4 ratio) */
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #272a3d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            user-select: none;
+        }
+
+        #canvas-baseline, #canvas-upscaled, #canvas-lcd, #canvas-split, #canvas-hd {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        #canvas-baseline.active, #canvas-upscaled.active, #canvas-lcd.active, #canvas-split.active, #canvas-hd.active {
+            display: block;
+        }
+
+        #canvas-baseline {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* SPLIT VIEW DRAGGABLE BAR */
+        #split-divider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 3px;
+            background: #f59e0b;
+            cursor: ew-resize;
+            z-index: 20;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.8);
+            display: none;
+        }
+
+        #split-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #f59e0b;
+            color: #000;
+            font-weight: 900;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+
+        /* BADGES */
+        .mode-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #38bdf8;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        /* SIDE PANEL: CONTROLS & MAGNIFIER */
+        .controls-panel {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .card {
+            background: #121420;
+            border: 1px solid #23273c;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .card-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* MODE BUTTONS */
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .mode-btn {
+            background: #1b1e2e;
+            border: 1px solid #2e344e;
+            color: #cbd5e1;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .mode-btn:hover {
+            background: #252a42;
+            border-color: #475569;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border-color: #60a5fa;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+
+        .mode-btn .desc {
+            font-size: 0.7rem;
+            font-weight: 400;
+            opacity: 0.75;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* SLIDERS */
+        .slider-row {
+            margin-bottom: 10px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.76rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #f59e0b;
+        }
+
+        /* MAGNIFIER LOUPE */
+        #magnifier-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #magnifier-canvas {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 3px solid #f59e0b;
+            background: #000;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+            image-rendering: pixelated;
+        }
+
+        .mag-help {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        /* INTERACTION BAR */
+        .action-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 10px;
+            background: #23273c;
+            border: 1px solid #3b4260;
+            color: #e2e8f0;
+            border-radius: 7px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .action-btn:active {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        .back-link {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #38bdf8;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Resolution & Nokia LCD Subpixel Lab</h1>
+        <p class="subhead">Interactive visual comparison: see why 4&times; Super-Sampling and authentic 2005 Nokia TFT-LCD subpixel apertures enhance the game without ruining the original pixel art.</p>
+    </header>
+
+    <div id="demo-stage">
+        <!-- 3:4 SCREEN DISPLAY -->
+        <div class="viewport-box" id="viewport">
+            <span class="mode-badge" id="badge-label">1× Native Baseline (240×320)</span>
+
+            <!-- Canvas 1: Baseline 240x320 with CSS nearest neighbor -->
+            <canvas id="canvas-baseline" width="240" height="320" class="active"></canvas>
+
+            <!-- Canvas 2: 2x Smashed HD Textures (Rendered at 4x canvas) -->
+            <canvas id="canvas-hd" width="960" height="1280"></canvas>
+
+            <!-- Canvas 3: 4x Super-Sampled 960x1280 (Crisp Square Pixels) -->
+            <canvas id="canvas-upscaled" width="960" height="1280"></canvas>
+
+            <!-- Canvas 4: Split-Screen Comparison -->
+            <canvas id="canvas-split" width="960" height="1280"></canvas>
+
+            <!-- Draggable divider for split mode -->
+            <div id="split-divider">
+                <div id="split-handle">⇄</div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: MODES & CONTROLS -->
+        <div class="controls-panel">
+            <div class="card">
+                <div class="card-title">Display Modes</div>
+                <div class="btn-group">
+                    <button class="mode-btn active" data-mode="baseline">
+                        <div>
+                            <span>1. Baseline (240×320)</span>
+                            <span class="desc">Raw original textures (20×20 tiles, 37×37 sprites).</span>
+                        </div>
+                    </button>
+                    <button class="mode-btn" data-mode="hd-smashed">
+                        <div>
+                            <span>2. 2× Sliced & Smashed HD Textures ✨</span>
+                            <span class="desc">Broken down, upscaled 2× with smart pixel interpolation, and re-smashed into HD sheets.</span>
+                        </div>
+                    </button>
+                    <button class="mode-btn" data-mode="upscaled">
+                        <div>
+                            <span>3. 4× Super-Sampling (Integer 960×1280)</span>
+                            <span class="desc">Exact 4×4 integer grid over baseline. 100% square pixels.</span>
+                        </div>
+                    </button>
+                    <button class="mode-btn" data-mode="split">
+                        <div>
+                            <span>4. Interactive Split-Screen (1× vs 2× HD) ⇄</span>
+                            <span class="desc">Drag divider to compare Original vs 2× Smashed Textures in real-time.</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- LCD TUNER -->
+            <div class="card" id="lcd-controls-card">
+                <div class="card-title">Nokia LCD Subpixel Tuning</div>
+                <div class="slider-row">
+                    <div class="slider-label">
+                        <span>Aperture Grid Darkness</span>
+                        <span id="grid-val">40%</span>
+                    </div>
+                    <input type="range" id="slider-grid" min="0" max="100" value="40">
+                </div>
+                <div class="slider-row">
+                    <div class="slider-label">
+                        <span>RGB Subpixel Vibrancy</span>
+                        <span id="rgb-val">15%</span>
+                    </div>
+                    <input type="range" id="slider-rgb" min="0" max="50" value="15">
+                </div>
+                <div class="slider-row">
+                    <div class="slider-label">
+                        <span>Scanline Depth</span>
+                        <span id="scan-val">35%</span>
+                    </div>
+                    <input type="range" id="slider-scan" min="0" max="100" value="35">
+                </div>
+            </div>
+
+            <!-- PIXEL LOUPE / MAGNIFIER -->
+            <div class="card">
+                <div class="card-title">Pixel Microscope (10× Loupe)</div>
+                <div id="magnifier-box">
+                    <canvas id="magnifier-canvas" width="140" height="140"></canvas>
+                    <span class="mag-help">Hover / move mouse or touch the game screen to inspect individual pixels close up!</span>
+                </div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="card">
+                <div class="card-title">Interactive Jack Controls</div>
+                <div class="action-row" style="margin-bottom:8px;">
+                    <button class="action-btn" id="btn-whip">⚡ Whip Attack</button>
+                    <button class="action-btn" id="btn-walk">🚶 Toggle Walk</button>
+                </div>
+                <div class="action-row">
+                    <button class="action-btn" id="btn-prev-room">◀ Prev Room</button>
+                    <button class="action-btn" id="btn-next-room">Next Room ▶</button>
+                </div>
+            </div>
+
+            <a href="../player/" class="back-link">← Return to Full Game Player</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { DataInputStream } from "./io/DataInputStream.js";
+
+        // Living Mobile Authentic Engine Dimensions
+        const ROOM_COLS = 11;
+        const ROOM_ROWS = 12;
+        const ROOM_BYTES = ROOM_COLS * ROOM_ROWS; // 132 bytes
+        const TILE_SIZE = 20;
+        const SPRITE_SIZE = 37;
+        const TILESET_COLS = 16;
+        const SPRITESET_COLS = 12;
+        const OFFSET_X = Math.floor((240 - ROOM_COLS * TILE_SIZE) / 2); // 10px
+        const OFFSET_Y = 40;
+
+        const TILE_MAP = {
+            0: 188, 3: 58, 4: 187, 5: 171, 6: 59, 7: 60, 22: 86, 28: 155, 32: 221
+        };
+
+        let tileImg = new Image();
+        let spriteImg = new Image();
+        let tileImg2x = new Image();
+        let spriteImg2x = new Image();
+        let allRooms = [];
+        let currentRoomIdx = 0;
+
+        let jackX = 72;
+        let jackY = 63;
+        let jackFrame = 8;
+        let isAttacking = false;
+        let isWalking = true;
+        let walkDir = 1;
+        let jackFacingLeft = false;
+
+        let activeMode = "baseline";
+        let splitRatio = 0.5;
+
+        // Tuner values
+        let gridDarkness = 0.40;
+        let rgbIntensity = 0.15;
+        let scanlineDepth = 0.35;
+
+        // Mouse inspection target for magnifier (in 240x320 space)
+        let inspectX = 85;
+        let inspectY = 75;
+
+        // Canvas references
+        const cvBaseline = document.getElementById("canvas-baseline");
+        const ctxBaseline = cvBaseline.getContext("2d");
+        ctxBaseline.imageSmoothingEnabled = false;
+
+        const cvHd = document.getElementById("canvas-hd");
+        const ctxHd = cvHd.getContext("2d");
+        ctxHd.imageSmoothingEnabled = false;
+
+        const cvUpscaled = document.getElementById("canvas-upscaled");
+        const ctxUpscaled = cvUpscaled.getContext("2d");
+        ctxUpscaled.imageSmoothingEnabled = false;
+
+        const cvSplit = document.getElementById("canvas-split");
+        const ctxSplit = cvSplit.getContext("2d");
+        ctxSplit.imageSmoothingEnabled = false;
+
+        const cvMag = document.getElementById("magnifier-canvas");
+        const ctxMag = cvMag.getContext("2d");
+        ctxMag.imageSmoothingEnabled = false;
+
+        const badge = document.getElementById("badge-label");
+        const splitDivider = document.getElementById("split-divider");
+        const viewport = document.getElementById("viewport");
+
+        async function init() {
+            try {
+                await Promise.all([
+                    loadImage(tileImg, "../assets/16x16TileSet.png"),
+                    loadImage(spriteImg, "../assets/32x32TileSet.png"),
+                    loadImage(tileImg2x, "../assets/16x16TileSet_2x.png"),
+                    loadImage(spriteImg2x, "../assets/32x32TileSet_2x.png")
+                ]);
+
+                const res = await fetch("../assets/levels.mar");
+                const buf = await res.arrayBuffer();
+                const dis = new DataInputStream(buf);
+                const totalRooms = Math.floor(dis.available() / ROOM_BYTES);
+
+                for (let i = 0; i < totalRooms; i++) {
+                    const room = new Uint8Array(ROOM_BYTES);
+                    dis.readFully(room);
+                    allRooms.push(room);
+                }
+
+                loadRoom(0);
+                setupUI();
+                requestAnimationFrame(renderLoop);
+            } catch (err) {
+                console.error("Init Error:", err);
+            }
+        }
+
+        function loadImage(img, src) {
+            return new Promise((resolve, reject) => {
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        function loadRoom(idx) {
+            currentRoomIdx = (idx + allRooms.length) % allRooms.length;
+            const roomData = allRooms[currentRoomIdx];
+            for (let i = 0; i < ROOM_BYTES; i++) {
+                if (roomData[i] === 29) {
+                    const c = i % ROOM_COLS;
+                    const r = Math.floor(i / ROOM_COLS);
+                    jackX = OFFSET_X + c * TILE_SIZE - 8;
+                    jackY = OFFSET_Y + r * TILE_SIZE - 17;
+                    break;
+                }
+            }
+        }
+
+        // DRAW BASE SCENE ON ANY CONTEXT AT GIVEN SCALE
+        function drawScene(ctx, scale, use2x = false) {
+            ctx.save();
+            ctx.scale(scale, scale);
+
+            // Background
+            ctx.fillStyle = "#08090d";
+            ctx.fillRect(0, 0, 240, 320);
+
+            const roomData = allRooms[currentRoomIdx];
+            if (!roomData) {
+                ctx.restore();
+                return;
+            }
+
+            // 1. Render Tiles (20x20 in 1x, 40x40 in 2x)
+            const curTileImg = use2x ? tileImg2x : tileImg;
+            const curTileSize = use2x ? 40 : 20;
+
+            for (let i = 0; i < ROOM_BYTES; i++) {
+                let code = roomData[i];
+                if (code === 29) code = 0;
+
+                const c = i % ROOM_COLS;
+                const r = Math.floor(i / ROOM_COLS);
+                const dx = OFFSET_X + c * TILE_SIZE;
+                const dy = OFFSET_Y + r * TILE_SIZE;
+
+                const tileId = TILE_MAP[code] !== undefined ? TILE_MAP[code] : (code > 7 ? 188 : 171);
+                const sx = (tileId % TILESET_COLS) * curTileSize;
+                const sy = Math.floor(tileId / TILESET_COLS) * curTileSize;
+
+                ctx.drawImage(curTileImg, sx, sy, curTileSize, curTileSize, dx, dy, TILE_SIZE, TILE_SIZE);
+            }
+
+            // 2. Render Jack Skellington (37x37 in 1x, 74x74 in 2x)
+            const curSpriteImg = use2x ? spriteImg2x : spriteImg;
+            const curSpriteSize = use2x ? 74 : 37;
+
+            const jx = (jackFrame % SPRITESET_COLS) * curSpriteSize;
+            const jy = Math.floor(jackFrame / SPRITESET_COLS) * curSpriteSize;
+
+            ctx.save();
+            if (jackFacingLeft) {
+                ctx.translate(jackX + SPRITE_SIZE, jackY);
+                ctx.scale(-1, 1);
+                ctx.drawImage(curSpriteImg, jx, jy, curSpriteSize, curSpriteSize, 0, 0, SPRITE_SIZE, SPRITE_SIZE);
+            } else {
+                ctx.drawImage(curSpriteImg, jx, jy, curSpriteSize, curSpriteSize, jackX, jackY, SPRITE_SIZE, SPRITE_SIZE);
+            }
+            ctx.restore();
+
+            // 3. HUD
+            ctx.fillStyle = "#f59e0b";
+            ctx.font = "bold 11px monospace";
+            ctx.fillText(`STAGE ${currentRoomIdx + 1} / ${allRooms.length}`, 12, 22);
+
+            ctx.fillStyle = "#94a3b8";
+            ctx.font = "10px monospace";
+            ctx.fillText(use2x ? "2X SMASHED TEXTURES • 2005" : "1X NATIVE TEXTURES • 2005", 12, 34);
+
+            ctx.fillStyle = "#64748b";
+            ctx.font = "10px monospace";
+            ctx.fillText("LIVING MOBILE / DISNEY", 12, 304);
+
+            ctx.restore();
+        }
+
+        // ANIMATION STEP
+        let frameCount = 0;
+        function updateAnimation() {
+            frameCount++;
+            if (isWalking && !isAttacking) {
+                if (frameCount % 4 === 0) {
+                    jackX += walkDir * 1.5;
+                    // Walking animation cycle: frames 8, 9, 10, 11
+                    const walkFrames = [8, 9, 10, 11];
+                    jackFrame = walkFrames[Math.floor(frameCount / 4) % walkFrames.length];
+
+                    if (jackX > 165) {
+                        walkDir = -1;
+                        jackFacingLeft = true;
+                    } else if (jackX < 40) {
+                        walkDir = 1;
+                        jackFacingLeft = false;
+                    }
+                }
+            }
+        }
+
+        function renderLoop() {
+            updateAnimation();
+
+            // 1. Baseline 240x320 (1x original textures)
+            drawScene(ctxBaseline, 1, false);
+
+            // 2. 2x Smashed HD Textures (drawn on 960x1280 canvas at 4x matrix scale)
+            drawScene(ctxHd, 4, true);
+
+            // 3. 4x Super-Sampled (1x original textures at 4x matrix scale)
+            drawScene(ctxUpscaled, 4, false);
+
+            // 4. Split-Screen Comparison (Left: 1x Baseline vs Right: 2x Smashed HD Textures)
+            if (activeMode === "split") {
+                const splitPx = Math.floor(960 * splitRatio);
+                ctxSplit.clearRect(0, 0, 960, 1280);
+
+                // Left side: Baseline (1x original textures)
+                ctxSplit.save();
+                ctxSplit.beginPath();
+                ctxSplit.rect(0, 0, splitPx, 1280);
+                ctxSplit.clip();
+                ctxSplit.drawImage(cvBaseline, 0, 0, 240, 320, 0, 0, 960, 1280);
+                ctxSplit.restore();
+
+                // Right side: 2x Smashed HD Textures
+                ctxSplit.save();
+                ctxSplit.beginPath();
+                ctxSplit.rect(splitPx, 0, 960 - splitPx, 1280);
+                ctxSplit.clip();
+                ctxSplit.drawImage(cvHd, 0, 0, 960, 1280);
+                ctxSplit.restore();
+            }
+
+            // 5. Update Magnifier Loupe (zoom around inspectX, inspectY)
+            renderMagnifier();
+
+            requestAnimationFrame(renderLoop);
+        }
+
+        function renderMagnifier() {
+            ctxMag.clearRect(0, 0, 140, 140);
+
+            // Source rectangle in 4x space (960x1280)
+            const srcSize = 14; // 14 pixels in 240 space = 56px in 4x space
+            const sx = Math.max(0, Math.min(240 - srcSize, inspectX - srcSize / 2)) * 4;
+            const sy = Math.max(0, Math.min(320 - srcSize, inspectY - srcSize / 2)) * 4;
+            const sw = srcSize * 4;
+            const sh = srcSize * 4;
+
+            let activeCanvas = cvBaseline;
+            if (activeMode === "hd-smashed") activeCanvas = cvHd;
+            else if (activeMode === "upscaled") activeCanvas = cvUpscaled;
+            else if (activeMode === "split") activeCanvas = cvHd;
+
+            // Draw magnified 10x
+            ctxMag.drawImage(activeCanvas, sx, sy, sw, sh, 0, 0, 140, 140);
+
+            // Outer ring & crosshair
+            ctxMag.strokeStyle = "rgba(245, 158, 11, 0.4)";
+            ctxMag.lineWidth = 1;
+            ctxMag.beginPath();
+            ctxMag.moveTo(70, 0); ctxMag.lineTo(70, 140);
+            ctxMag.moveTo(0, 70); ctxMag.lineTo(140, 70);
+            ctxMag.stroke();
+        }
+
+        function triggerWhip() {
+            if (isAttacking) return;
+            isAttacking = true;
+            const frames = [12, 13, 14, 15, 8];
+            let step = 0;
+            const whipInterval = setInterval(() => {
+                if (step < frames.length) {
+                    jackFrame = frames[step++];
+                } else {
+                    clearInterval(whipInterval);
+                    jackFrame = 8;
+                    isAttacking = false;
+                }
+            }, 65);
+        }
+
+        function setMode(mode) {
+            activeMode = mode;
+            [cvBaseline, cvHd, cvUpscaled, cvSplit].forEach(c => c && c.classList.remove("active"));
+            splitDivider.style.display = "none";
+
+            document.querySelectorAll(".mode-btn").forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.mode === mode);
+            });
+
+            if (mode === "baseline") {
+                cvBaseline.classList.add("active");
+                badge.textContent = "1. Baseline (240×320 Original Textures)";
+            } else if (mode === "hd-smashed") {
+                cvHd.classList.add("active");
+                badge.textContent = "2. 2× Sliced & Smashed HD Textures (AdvMAME / Scale2x)";
+            } else if (mode === "upscaled") {
+                cvUpscaled.classList.add("active");
+                badge.textContent = "3. 4× Super-Sampling (Original Textures)";
+            } else if (mode === "split") {
+                cvSplit.classList.add("active");
+                splitDivider.style.display = "block";
+                splitDivider.style.left = `${splitRatio * 100}%`;
+                badge.textContent = "Split: Left (1× Baseline) ⇄ Right (2× Smashed HD)";
+            }
+        }
+
+        function setupUI() {
+            document.querySelectorAll(".mode-btn").forEach(btn => {
+                btn.addEventListener("click", () => setMode(btn.dataset.mode));
+            });
+
+            // Sliders
+            const sGrid = document.getElementById("slider-grid");
+            const sRgb = document.getElementById("slider-rgb");
+            const sScan = document.getElementById("slider-scan");
+
+            sGrid.addEventListener("input", (e) => {
+                gridDarkness = e.target.value / 100;
+                document.getElementById("grid-val").textContent = `${e.target.value}%`;
+                updateLcdPattern();
+            });
+
+            sRgb.addEventListener("input", (e) => {
+                rgbIntensity = e.target.value / 100;
+                document.getElementById("rgb-val").textContent = `${e.target.value}%`;
+                updateLcdPattern();
+            });
+
+            sScan.addEventListener("input", (e) => {
+                scanlineDepth = e.target.value / 100;
+                document.getElementById("scan-val").textContent = `${e.target.value}%`;
+                updateLcdPattern();
+            });
+
+            // Whip & Walk Buttons
+            document.getElementById("btn-whip").addEventListener("click", triggerWhip);
+            document.getElementById("btn-walk").addEventListener("click", () => {
+                isWalking = !isWalking;
+                document.getElementById("btn-walk").textContent = isWalking ? "⏸ Pause Walk" : "🚶 Resume Walk";
+            });
+
+            document.getElementById("btn-prev-room").addEventListener("click", () => loadRoom(currentRoomIdx - 1));
+            document.getElementById("btn-next-room").addEventListener("click", () => loadRoom(currentRoomIdx + 1));
+
+            // Viewport tracking for loupe & split divider
+            let isDraggingSplit = false;
+
+            function updatePointerPos(e) {
+                const rect = viewport.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const rx = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                const ry = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height));
+
+                inspectX = rx * 240;
+                inspectY = ry * 320;
+
+                if (isDraggingSplit || activeMode === "split") {
+                    if (e.buttons === 1 || e.touches) {
+                        splitRatio = rx;
+                        splitDivider.style.left = `${splitRatio * 100}%`;
+                    }
+                }
+            }
+
+            viewport.addEventListener("mousemove", updatePointerPos);
+            viewport.addEventListener("mousedown", (e) => {
+                isDraggingSplit = true;
+                updatePointerPos(e);
+            });
+            window.addEventListener("mouseup", () => isDraggingSplit = false);
+
+            viewport.addEventListener("touchmove", updatePointerPos, { passive: true });
+            viewport.addEventListener("touchstart", (e) => {
+                isDraggingSplit = true;
+                updatePointerPos(e);
+            }, { passive: true });
+            window.addEventListener("touchend", () => isDraggingSplit = false);
+        }
+
+        init();
+    </script>
+</body>
+</html>
+

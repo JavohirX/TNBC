@@ -402,6 +402,9 @@ function setupInputControls(tInstance, dirManager) {
             btn.classList.add("active");
             try { btn.setPointerCapture(e.pointerId); } catch (_) {}
             if (navigator.vibrate) navigator.vibrate(12);
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                try { window.Telegram.WebApp.HapticFeedback.impactOccurred("light"); } catch (_) {}
+            }
             AudioManager.playClick();
 
             keys.forEach((k) => {

@@ -1,0 +1,50 @@
+name: Deploy to VPS Server
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS via SSH & Rsync
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+            echo "=== 1. Ensuring target directory exists ==="
+            sudo mkdir -p /var/www/nightmare
+            sudo chown -R $USER:$USER /var/www/nightmare
+
+            echo "=== 2. Pulling latest code ==="
+            if [ -d "/var/www/nightmare/.git" ]; then
+              cd /var/www/nightmare
+              git pull origin main || git pull origin master
+            else
+              git clone ${{ github.server_url }}/${{ github.repository }} /var/www/nightmare
+              cd /var/www/nightmare
+            fi
+
+            echo "=== 3. Setting up Python environment for Telegram Bot ==="
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+            ./venv/bin/pip install --upgrade pip
+            ./venv/bin/pip install aiogram python-dotenv
+
+            echo "=== 4. Reloading Nginx & Restarting Bot Service ==="
+            sudo systemctl reload nginx || true
+            sudo systemctl restart nightmare-bot || true
+
+            echo "=== Deployment to VPS Completed Successfully! ==="
+

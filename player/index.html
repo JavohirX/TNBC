@@ -8,6 +8,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     <title>The Nightmare Before Christmas - Mobile Player</title>
+    <!-- Telegram Mini App WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -642,6 +644,21 @@
     <script type="module">
         window.addEventListener('error', (e) => console.error("Global Error:", e.message, e.filename, e.lineno, e.error));
         window.addEventListener('unhandledrejection', (e) => console.error("Unhandled Rejection:", e.reason));
+
+        // Telegram Mini App Auto-Ready & Expansion
+        if (window.Telegram?.WebApp) {
+            try {
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand();
+                if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+                if (tg.setHeaderColor) tg.setHeaderColor("#08090d");
+                if (tg.setBackgroundColor) tg.setBackgroundColor("#08090d");
+                console.log("Telegram Mini App SDK loaded and expanded!");
+            } catch (tgErr) {
+                console.warn("Telegram WebApp init warning:", tgErr);
+            }
+        }
 
         import { startNativeEngine } from '../engine/main.js';
         startNativeEngine('../assets/').catch(err => {

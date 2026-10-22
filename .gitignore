@@ -13,6 +13,7 @@ scratch/decompiled_renamed/
 scratch/*.png
 scratch/*.jpg
 scratch/*.bmp
+scratch/
 *.log
 
 
