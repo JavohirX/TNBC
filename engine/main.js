@@ -233,19 +233,24 @@ export async function startNativeEngine(assetBase = "assets/") {
 
     const graphics = new Graphics(ctx, 240, 320);
 
-    // Hide splash screen instantly!
-    const splash = document.getElementById("splash-screen");
-    if (splash) {
-        splash.style.transition = "opacity 0.25s ease";
-        splash.style.opacity = "0";
-        setTimeout(() => splash.remove(), 260);
-    }
-    canvas.style.display = "block";
-    canvas.focus();
-
     // Directional Input Manager for Authentic 1-Step-Per-Tap & Auto-Repeat
     const dirManager = new DirectionInputManager(tInstance);
     window.__dirManager = dirManager;
+
+    // Render initial frame into canvas so graphics are ready before veil lifts
+    try {
+        tInstance.paint(graphics);
+    } catch (_) {}
+
+    // Smoothly dismiss full-screen splash veil
+    const splash = document.getElementById("splash-screen");
+    if (splash) {
+        splash.classList.add("fade-out");
+        setTimeout(() => {
+            try { splash.remove(); } catch (_) {}
+        }, 360);
+    }
+    canvas.focus();
 
     // Setup High-Precision Game Render Loop (Authentic 25 FPS = 40ms per tick)
     let lastTick = performance.now();
@@ -477,6 +482,19 @@ function setupInputControls(tInstance, dirManager) {
     const btnFullscreen = document.getElementById("btn-fullscreen");
     if (btnFullscreen) {
         btnFullscreen.addEventListener("click", () => {
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                if (typeof tg.requestFullscreen === 'function') {
+                    try {
+                        if (tg.isFullscreen) {
+                            if (typeof tg.exitFullscreen === 'function') tg.exitFullscreen();
+                        } else {
+                            tg.requestFullscreen();
+                        }
+                        return;
+                    } catch (_) {}
+                }
+            }
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(() => {});
             } else {

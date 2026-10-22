@@ -20,8 +20,8 @@ from aiogram.types import (
 load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-# Your VPS domain or GitHub Pages URL (e.g. "https://game.yourdomain.com/player/")
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://yourdomain.com/player/")
+# Your VPS domain or GitHub Pages URL (e.g. "https://193.36.236.221.sslip.io/player/")
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://193.36.236.221.sslip.io/player/")
 
 if not TOKEN:
     print("Error: TELEGRAM_BOT_TOKEN is not set in .env")
