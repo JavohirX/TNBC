@@ -157,7 +157,10 @@ const REQUIRED_ASSETS = [
     "sp__ru", "sp__de", "sp__fr", "sp__it",
     "lp__ru", "lp__de", "lp__fr", "lp__it", "lpok",
     "16x16TileSet.png", "32x32TileSet.png", "levelSelect.png", "menuBottom.png",
-    "splash.png", "mDisneyLogo.png", "softKeys.png"
+    "splash.png", "mDisneyLogo.png", "softKeys.png",
+    "replay0.rpl", "replay3.rpl", "replay5.rpl", "replay10.rpl",
+    "replay14.rpl", "replay15.rpl", "replay20.rpl", "replay25.rpl",
+    "replay35.rpl", "replay39.rpl", "replay40.rpl", "replay45.rpl"
 ];
 
 async function preloadAssets(basePath = "assets/") {
