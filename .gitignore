@@ -3,9 +3,17 @@ __pycache__/
 .vscode/
 .idea/
 node_modules/
+.env
+.env.*
 scratch/cfr.jar
 scratch/j2me-web/
 scratch/chrome_profile*/
-*.png
+scratch/decompiled/
+scratch/decompiled_renamed/
+scratch/*.png
+scratch/*.jpg
+scratch/*.bmp
 *.log
+
+
 

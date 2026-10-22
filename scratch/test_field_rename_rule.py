@@ -24,3 +24,4 @@ def rename_clash_fields(code, fields):
 res = rename_clash_fields(sample, clash_fields)
 print("Result:")
 print(res)
+

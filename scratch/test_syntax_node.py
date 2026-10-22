@@ -15,3 +15,4 @@ for f in files:
         print(f"ERROR: {f}")
         for err_line in res.stderr.splitlines()[:5]:
             print("  ", err_line)
+

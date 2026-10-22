@@ -21,3 +21,4 @@ for f in sorted(os.listdir(DECOMPILED_DIR)):
         print(f"=== {f} ===")
         for k, v in overloads.items():
             print(f"  Method '{k}': {len(v)} overloads -> {v}")
+

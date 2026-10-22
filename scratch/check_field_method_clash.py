@@ -21,3 +21,4 @@ for f in sorted(os.listdir(DECOMPILED_DIR)):
     clashes = fields.intersection(methods)
     if clashes:
         print(f"Class {c}: {len(clashes)} field-method clashes -> {sorted(clashes)}")
+

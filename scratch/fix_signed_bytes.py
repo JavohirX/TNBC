@@ -84,3 +84,4 @@ ejs = ejs.replace(e_target, e_repl)
 with open('engine/classes/e.js', 'w', encoding='utf-8') as f:
     f.write(ejs)
 print("Updated e.js")
+

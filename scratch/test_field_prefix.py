@@ -19,3 +19,4 @@ for f in sorted(os.listdir(DECOMPILED_DIR)):
     if flds:
         single_letter_fields[c] = flds
         print(f"Class {c} has single letter fields: {sorted(flds)}")
+

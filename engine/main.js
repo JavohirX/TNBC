@@ -97,14 +97,7 @@ window.Timer = class Timer {
         this._timeout = null;
     }
     schedule(task, delay) {
-        if (this._timeout) clearTimeout(this._timeout);
-        this._timeout = setTimeout(() => {
-            try {
-                task.run();
-            } catch (e) {
-                console.error("TimerTask error:", e);
-            }
-        }, Math.max(5, delay));
+        // Game ticks are exclusively and smoothly driven by the requestAnimationFrame gameLoop
     }
     cancel() {
         if (this._timeout) clearTimeout(this._timeout);
@@ -247,19 +240,23 @@ export async function startNativeEngine(assetBase = "assets/") {
     canvas.style.display = "block";
     canvas.focus();
 
-    // Setup High-Precision Game Render Loop
+    // Directional Input Manager for Authentic 1-Step-Per-Tap & Auto-Repeat
+    const dirManager = new DirectionInputManager(tInstance);
+    window.__dirManager = dirManager;
+
+    // Setup High-Precision Game Render Loop (Authentic 25 FPS = 40ms per tick)
     let lastTick = performance.now();
-    const TICK_INTERVAL = 1000 / 30; // 30 FPS Living Mobile target
+    const TICK_INTERVAL = 40; // Authentic Living Mobile 2005 rate (this.var_int_h in t.js)
 
     function gameLoop(now) {
         requestAnimationFrame(gameLoop);
 
-        // If s.java timer isn't ticking, run game tick
         const elapsed = now - lastTick;
         if (elapsed >= TICK_INTERVAL) {
             lastTick = now - (elapsed % TICK_INTERVAL);
             try {
                 tInstance.g();
+                dirManager.onGameTick();
             } catch (err) {
                 console.error("Game tick error:", err);
             }
@@ -276,13 +273,78 @@ export async function startNativeEngine(assetBase = "assets/") {
     requestAnimationFrame(gameLoop);
 
     // 7. Input Wiring: Keyboard & 3D Tactile Retro Phone
-    setupInputControls(tInstance);
+    setupInputControls(tInstance, dirManager);
 
     const bootTime = Math.round(performance.now() - t0);
     console.log(`Native Engine booted successfully in ${bootTime}ms! Instant 0s launch.`);
 }
 
-function setupInputControls(tInstance) {
+const DIRECTION_KEYS = new Set([-1, -2, -3, -4, 50, 52, 54, 56]);
+
+class DirectionInputManager {
+    constructor(tInstance) {
+        this.t = tInstance;
+        this.states = new Map(); // j2meKey -> state
+    }
+
+    handlePress(j2meKey) {
+        if (!DIRECTION_KEYS.has(j2meKey)) {
+            this.t.keyPressed(j2meKey);
+            return;
+        }
+
+        let state = this.states.get(j2meKey);
+        if (!state) {
+            state = {
+                pressTime: performance.now(),
+                stepInitiated: false,
+                repeatActive: false
+            };
+            this.states.set(j2meKey, state);
+            this.t.keyPressed(j2meKey);
+        }
+    }
+
+    handleRelease(j2meKey) {
+        this.t.keyReleased(j2meKey);
+        this.states.delete(j2meKey);
+    }
+
+    releaseAll() {
+        for (const key of this.states.keys()) {
+            this.t.keyReleased(key);
+        }
+        this.states.clear();
+    }
+
+    onGameTick() {
+        const now = performance.now();
+        const jack = this.t?.var_n_a?.var_q_a;
+        const isMoving = jack && (jack.f_e === 1 || jack.f_e === 4);
+
+        for (const [key, state] of this.states.entries()) {
+            const holdMs = now - state.pressTime;
+
+            if (isMoving) {
+                state.stepInitiated = true;
+            }
+
+            // If user has held for less than the repeat threshold (400ms):
+            // Once the step is initiated, release the key in engine so Jack stops after exactly 1 tile!
+            if (holdMs < 400) {
+                if (state.stepInitiated) {
+                    this.t.keyReleased(key);
+                }
+            } else {
+                // Long continuous hold (> 400ms): re-assert key for continuous smooth walking!
+                this.t.keyPressed(key);
+                state.repeatActive = true;
+            }
+        }
+    }
+}
+
+function setupInputControls(tInstance, dirManager) {
     // Physical Keyboard Map
     const KEY_MAP = {
         "ArrowUp": -1, "KeyW": -1, "Numpad8": 56,
@@ -310,7 +372,7 @@ function setupInputControls(tInstance) {
         const j2meKey = KEY_MAP[e.code];
         if (j2meKey !== undefined) {
             e.preventDefault();
-            tInstance.keyPressed(j2meKey);
+            dirManager.handlePress(j2meKey);
             triggerButtonActive(e.code, true);
         }
     });
@@ -319,7 +381,7 @@ function setupInputControls(tInstance) {
         const j2meKey = KEY_MAP[e.code];
         if (j2meKey !== undefined) {
             e.preventDefault();
-            tInstance.keyReleased(j2meKey);
+            dirManager.handleRelease(j2meKey);
             triggerButtonActive(e.code, false);
         }
     });
@@ -335,22 +397,24 @@ function setupInputControls(tInstance) {
         const handlePress = (e) => {
             e.preventDefault();
             btn.classList.add("active");
+            try { btn.setPointerCapture(e.pointerId); } catch (_) {}
             if (navigator.vibrate) navigator.vibrate(12);
             AudioManager.playClick();
 
             keys.forEach((k) => {
                 const j2meKey = KEY_MAP[k.trim()];
-                if (j2meKey !== undefined) tInstance.keyPressed(j2meKey);
+                if (j2meKey !== undefined) dirManager.handlePress(j2meKey);
             });
         };
 
         const handleRelease = (e) => {
             e.preventDefault();
             btn.classList.remove("active");
+            try { btn.releasePointerCapture(e.pointerId); } catch (_) {}
 
             keys.forEach((k) => {
                 const j2meKey = KEY_MAP[k.trim()];
-                if (j2meKey !== undefined) tInstance.keyReleased(j2meKey);
+                if (j2meKey !== undefined) dirManager.handleRelease(j2meKey);
             });
         };
 
@@ -358,7 +422,34 @@ function setupInputControls(tInstance) {
         btn.addEventListener("pointerup", handleRelease);
         btn.addEventListener("pointercancel", handleRelease);
         btn.addEventListener("pointerleave", handleRelease);
+        btn.addEventListener("touchend", handleRelease);
+        btn.addEventListener("touchcancel", handleRelease);
+        btn.addEventListener("mouseup", handleRelease);
     });
+
+    // Global fail-safe release for touches/clicks moving outside element bounds
+    const releaseAllButtons = () => {
+        buttons.forEach((btn) => {
+            if (btn.classList.contains("active")) {
+                btn.classList.remove("active");
+                const keyData = btn.getAttribute("data-key");
+                if (keyData) {
+                    keyData.split(",").forEach(k => {
+                        const j2meKey = KEY_MAP[k.trim()];
+                        if (j2meKey !== undefined) dirManager.handleRelease(j2meKey);
+                    });
+                }
+            }
+        });
+        dirManager.releaseAll();
+    };
+
+    window.addEventListener("pointerup", releaseAllButtons);
+    window.addEventListener("pointercancel", releaseAllButtons);
+    window.addEventListener("mouseup", releaseAllButtons);
+    window.addEventListener("touchend", releaseAllButtons);
+    window.addEventListener("touchcancel", releaseAllButtons);
+    window.addEventListener("blur", releaseAllButtons);
 
     // Toolbar Buttons
     const btnMute = document.getElementById("btn-mute");

@@ -40,3 +40,4 @@ else:
 with open('engine/classes/t.js', 'w', encoding='utf-8') as f:
     f.write(s)
 print("Updated engine/classes/t.js successfully!")
+

@@ -150,3 +150,4 @@ for c in ["k", "l", "s", "d", "p", "c", "o", "h"]:
     with open(out_path, "w", encoding="utf-8") as fp:
         fp.write(js)
     print(f"Generated {c}.js")
+

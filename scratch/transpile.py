@@ -13,3 +13,4 @@ for f in sorted(files):
     with open(path, "r", encoding="utf-8") as fp:
         lines = fp.readlines()
     print(f"{f}: {len(lines)} lines")
+

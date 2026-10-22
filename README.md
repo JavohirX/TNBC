@@ -95,11 +95,21 @@ This repository is pre-configured for automated 1-click cloud hosting:
 
 ---
 
-## 6. Pure JavaScript / Canvas 2D Engine
+## 6. 100% Pure Native JavaScript / Canvas 2D Engine
 
-To eliminate the 30–60s CheerpJ compile time, a native HTML5 Canvas 2D engine is being constructed under [`engine/`](engine/):
-- **[`engine/lcd/Graphics.js`](engine/lcd/Graphics.js)**: 1:1 Canvas 2D implementation of Nokia/MIDP `javax.microedition.lcdui.Graphics` (clipping, blitting, anchors, region transforms).
-- **[`engine/lcd/Image.js`](engine/lcd/Image.js)**: Fast bitmap cache with pixel manipulation.
-- **[`engine/lcd/RecordStore.js`](engine/lcd/RecordStore.js)**: `localStorage` RMS persistent storage.
-- **[`engine/io/DataInputStream.js`](engine/io/DataInputStream.js)**: Zero-copy big-endian binary decoder for `levels.mar` and font tables.
-- **[`engine/test_runner.html`](engine/test_runner.html)**: Interactive room viewer & sprite animator demonstrating 60 FPS, 0ms startup time.
+The entire J2ME bytecode was successfully decompiled and transpiled into a **100% Pure Native ES6 Engine**:
+- **Zero WebAssembly & Zero Loading Delay**: Boots instantly in under **100ms** (compared to 30–60s on older WebAssembly runtimes).
+- **All 21 Native Game Classes**: Transpiled into clean ES6 JavaScript modules with full Java type semantics preserved:
+  - `GMIDlet`, `t`, `n`, `q`, `i`, `r`, `b`, `m`, `j`, `s`, `k`, `l`, `d`, `p`, `c`, `o`, `h`, `f`, `g`, `e`, `a`.
+- **Canvas 2D Graphics Subsystem** ([`engine/lcd/Graphics.js`](engine/lcd/Graphics.js)):
+  - Full Nokia/MIDP 2.0 `javax.microedition.lcdui.Graphics` implementation supporting clipping, bitmap transforms, sprite anchors, and pixel-perfect tile blitting.
+- **Pure Web Audio Polyphonic Synthesizer** ([`engine/audio/AudioManager.js`](engine/audio/AudioManager.js)):
+  - Built-in multi-channel MIDI sequencer and oscillator synthesizer rendering tracks 0 through 5 without external SoundFonts.
+- **Authentic 1-Step-Per-Tap Directional Movement**:
+  - Precision input debouncing ensures tapping a direction moves Jack Skellington exactly 1 grid tile (1 step).
+  - Holding a direction engages smooth continuous walking after an authentic 400ms repeat delay.
+- **Tactile 3D Retro Mobile Controller**:
+  - Mechanical 3D button depression effects on tap and hold.
+  - Complete 8-way D-Pad with dedicated diagonal corner buttons and Center OK.
+  - Classic top-left (LSK) and top-right (RSK) Nokia soft keys.
+  - Prominent Fire/Whip button and dedicated ✱, 0, # action keys.

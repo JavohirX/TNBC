@@ -38,3 +38,4 @@ pos += 2
 s2_str = data[pos:pos+utflen2].decode('utf-8', errors='ignore')
 pos += utflen2
 print("String 2:", s2_str)
+

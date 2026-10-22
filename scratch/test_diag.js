@@ -1,98 +1,97 @@
-const { spawn } = require('child_process');
-const http = require('http');
-const fs = require('fs');
+import fs from 'fs';
+import path from 'path';
 
-const chromePath = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
-const chromeProcess = spawn(chromePath, [
-    '--headless=new',
-    '--remote-debugging-port=9222',
-    '--window-size=430,932',
-    '--no-sandbox',
-    '--disable-gpu',
-    '--user-data-dir=' + __dirname + '\\chrome_profile_portrait'
-]);
-
-function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-async function run() {
-    await wait(2000);
-    http.get('http://localhost:9222/json', (res) => {
-        let raw = '';
-        res.on('data', c => raw += c);
-        res.on('end', async () => {
-            const targets = JSON.parse(raw);
-            const page = targets.find(t => t.type === 'page');
-            const ws = new WebSocket(page.webSocketDebuggerUrl);
-
-            ws.onopen = () => {
-                ws.send(JSON.stringify({ id: 1, method: 'Runtime.enable' }));
-                ws.send(JSON.stringify({ id: 2, method: 'Page.enable' }));
-                ws.send(JSON.stringify({
-                    id: 5,
-                    method: 'Page.navigate',
-                    params: { url: 'http://localhost:8080/player/index.html' }
-                }));
-            };
-
-            ws.onmessage = (event) => {
-                const msg = JSON.parse(event.data);
-                if (msg.method === 'Runtime.consoleAPICalled') {
-                    const txt = msg.params.args.map(a => a.value !== undefined ? a.value : (a.description || '')).join(' ');
-                    console.log('[BROWSER CONSOLE]', txt);
-                } else if (msg.result && msg.result.data) {
-                    fs.writeFileSync(__dirname + `/diag_${msg.id}.png`, Buffer.from(msg.result.data, 'base64'));
-                    console.log(`Saved diag_${msg.id}.png`);
-                }
-            };
-
-            function triggerButton(selector) {
-                const expr = `(() => {
-                    const el = document.querySelector('${selector}');
-                    if (!el) { console.error('NOT FOUND: ${selector}'); return false; }
-                    console.log('Activating button:', '${selector}', el.dataset.key);
-                    el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-                    setTimeout(() => {
-                        el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-                        window.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
-                        console.log('Deactivated button:', '${selector}');
-                    }, 200);
-                    return true;
-                })()`;
-                ws.send(JSON.stringify({ id: 50, method: 'Runtime.evaluate', params: { expression: expr } }));
-            }
-
-            console.log('Waiting 70s for game to reach language menu...');
-            await wait(70000);
-
-            // Tap OK on language menu
-            console.log('Step 1: Tapping .dpad-center-ok...');
-            triggerButton('.dpad-center-ok');
-            await wait(2500);
-
-            // Tap LSK (OPTIONS) for "ДА" (YES to Sound)
-            console.log('Step 2: Tapping #btn-lsk (OPTIONS)...');
-            triggerButton('#btn-lsk');
-            await wait(2500);
-
-            // Tap Enter / 5 on "ДА" just in case OK confirms it
-            console.log('Step 3: Tapping .dpad-center-ok again...');
-            triggerButton('.dpad-center-ok');
-            await wait(3000);
-
-            ws.send(JSON.stringify({ id: 10, method: 'Page.captureScreenshot' }));
-            await wait(4000);
-
-            // Wait another 4s and capture
-            ws.send(JSON.stringify({ id: 11, method: 'Page.captureScreenshot' }));
-            await wait(4000);
-
-            console.log('Diagnosis complete!');
-            ws.close();
-            chromeProcess.kill();
-            process.exit(0);
-        });
-    });
+const assetCache = new Map();
+const assetDir = 'assets';
+for (const file of fs.readdirSync(assetDir)) {
+    const full = path.join(assetDir, file);
+    if (fs.statSync(full).isFile()) {
+        const buf = fs.readFileSync(full);
+        assetCache.set('/' + file, buf);
+        assetCache.set(file, buf);
+    }
 }
 
-run();
+String.prototype.equals = function(o) { return String(this) === String(o); };
+String.prototype.equalsIgnoreCase = function(o) { return this.toLowerCase() === String(o).toLowerCase(); };
 
+import { DataInputStream } from '../engine/io/DataInputStream.js';
+global.DataInputStream = DataInputStream;
+global.ResourceManager = {
+    getResourceAsStream: (resPath) => {
+        let clean = resPath.startsWith('/') ? resPath : '/' + resPath;
+        let buf = assetCache.get(clean) || assetCache.get(resPath) || new Uint8Array(0);
+        return new DataInputStream(buf.buffer, buf.byteOffset, buf.byteLength);
+    },
+    getResourceBytes: (resPath) => {
+        let clean = resPath.startsWith('/') ? resPath : '/' + resPath;
+        return assetCache.get(clean) || assetCache.get(resPath);
+    }
+};
+
+import { Image } from '../engine/lcd/Image.js';
+global.Image = Image;
+import { Graphics } from '../engine/lcd/Graphics.js';
+global.Graphics = Graphics;
+
+global.Display = { getDisplay: () => ({ setCurrent: () => {} }) };
+global.FullCanvas = class { getWidth() { return 240; } getHeight() { return 320; } setFullScreenMode() {} repaint() {} serviceRepaints() {} getGameAction(n) {
+    switch(n) {
+        case -1: case 50: case 38: return 1; // UP
+        case -2: case 56: case 40: return 6; // DOWN
+        case -3: case 52: case 37: return 2; // LEFT
+        case -4: case 54: case 39: return 5; // RIGHT
+        case -5: case 53: case 13: case 32: return 8; // FIRE
+        default: return 0;
+    }
+}};
+global.StringBuffer = class { constructor() { this.s = ""; } toString() { return this.s; } };
+global.Random = class { nextInt(n) { return Math.floor(Math.random() * (n || 100)); } };
+global.Timer = class { schedule() {} cancel() {} };
+global.RecordStore = { openRecordStore: () => ({ getNumRecords: () => 0, getRecord: () => null, addRecord: () => 1, setRecord: () => {}, closeRecordStore: () => {} }) };
+global.MIDlet = class { getAppProperty() { return "1.0.0"; } notifyDestroyed() {} platformRequest() {} getClass() { return this.constructor; } };
+
+const CLASS_NAMES = [
+    "k", "l", "d", "p", "c", "o", "h", "f", "g", "s", "j", "e", "r", "i", "b", "m", "q", "n", "a", "t", "GMIDlet"
+];
+
+for (const c of CLASS_NAMES) {
+    const mod = await import(`../engine/classes/${c}.js`);
+    global[c] = mod[c];
+}
+
+const midlet = new global.GMIDlet();
+midlet.startApp();
+const tInst = global.GMIDlet.var_t_a;
+global.t.a(0); // russian
+tInst.l(); // load tilesets
+
+tInst.var_n_a.c();
+tInst.var_n_a.c(0);
+tInst.m();
+
+// Tick 1
+tInst.g();
+
+// Dismiss briefing: double press -6
+tInst.keyPressed(-6); tInst.g(); tInst.keyReleased(-6);
+tInst.keyPressed(-6); tInst.g(); tInst.keyReleased(-6);
+
+const jack = tInst.var_n_a.var_q_a;
+
+function testAction(name, keyCode, ticks) {
+    tInst.keyPressed(keyCode);
+    const frames = [];
+    for (let i = 0; i < ticks; i++) {
+        tInst.g();
+        frames.push(jack.var_h_a.f_c);
+    }
+    tInst.keyReleased(keyCode);
+    console.log(`${name} frames:`, [...new Set(frames)], `full: [${frames.join(',')}]`);
+}
+
+testAction("Walking RIGHT (-4)", -4, 16);
+testAction("Walking DOWN (-2)", -2, 16);
+testAction("Walking LEFT (-3)", -3, 16);
+testAction("Walking UP (-1)", -1, 16);
+testAction("Whip FIRE (-5)", -5, 16);

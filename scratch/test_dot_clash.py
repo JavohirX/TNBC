@@ -20,3 +20,4 @@ for fld in all_clash:
     code = re.sub(rf'(?<=\.){fld}\b(?!\s*\()', f'f_{fld}', code)
 
 print(code)
+

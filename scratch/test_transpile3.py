@@ -16,3 +16,4 @@ with open(os.path.join(DECOMPILED_DIR, "h.java"), "r", encoding="utf-8") as f:
 res = clean_code(raw, "h")
 for line in res.splitlines()[:20]:
     print(line)
+

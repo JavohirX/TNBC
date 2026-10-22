@@ -199,3 +199,4 @@ for c in CLASS_NAMES:
     with open(out_file, "w", encoding="utf-8") as f:
         f.write(js_code)
     print(f"Generated {c}.js ({len(js_code.splitlines())} lines)")
+

@@ -19,3 +19,4 @@ for f in sorted(os.listdir(DECOMPILED_DIR)):
     for vis, is_static, is_fin, ret, name in methods:
         if name in fields:
             print(f"Class {c}: method '{name}' (vis={vis}, static={bool(is_static)}) clashes with field '{name}'")
+

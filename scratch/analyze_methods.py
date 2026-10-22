@@ -29,3 +29,4 @@ def analyze_class_methods(class_name):
 
 for c in ["GMIDlet", "j", "d", "p", "c", "o", "h", "g", "b", "f", "m", "q", "r", "n", "t", "i", "a", "e"]:
     analyze_class_methods(c)
+
