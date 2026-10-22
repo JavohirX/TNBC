@@ -584,36 +584,38 @@ function setupInputControls(tInstance, dirManager) {
                 if (el.closest(".dpad-center-hub")) return null;
             }
 
-            // Fallback: 360-degree radial vector geometry from D-pad center
+            // Fallback: 360-degree radial vector geometry from D-pad center (normalized for rectangles)
             const rect = dpadGrid.getBoundingClientRect();
             const cx = rect.left + rect.width / 2;
             const cy = rect.top + rect.height / 2;
-            const dx = clientX - cx;
-            const dy = clientY - cy;
-            const dist = Math.hypot(dx, dy);
+            const halfW = (rect.width / 2) || 1;
+            const halfH = (rect.height / 2) || 1;
+            const nx = (clientX - cx) / halfW;
+            const ny = (clientY - cy) / halfH;
+            const dist = Math.hypot(nx, ny);
 
-            // Neutral center dead-zone (approx radius of center hub)
-            const deadZone = rect.width * 0.16;
+            // Neutral center dead-zone (relative radius of center hub)
+            const deadZone = 0.35;
             // Outer release boundary
-            const maxRadius = rect.width * 0.95;
+            const maxRadius = 1.35;
 
             if (dist < deadZone || dist > maxRadius) {
                 return null;
             }
 
-            let deg = Math.atan2(dy, dx) * (180 / Math.PI);
+            let deg = Math.atan2(ny, nx) * (180 / Math.PI);
             if (deg < 0) deg += 360;
 
             const sector = Math.floor(((deg + 22.5) % 360) / 45);
             const SECTORS = [
-                "right",       // 0: [337.5°, 22.5°)
-                "down-right",  // 1: [22.5°, 67.5°)
-                "down",        // 2: [67.5°, 112.5°)
-                "down-left",   // 3: [112.5°, 157.5°)
-                "left",        // 4: [157.5°, 202.5°)
-                "up-left",     // 5: [202.5°, 247.5°)
-                "up",          // 6: [247.5°, 292.5°)
-                "up-right"     // 7: [292.5°, 337.5°)
+                "right",       // 0: [337.5Â°, 22.5Â°)
+                "down-right",  // 1: [22.5Â°, 67.5Â°)
+                "down",        // 2: [67.5Â°, 112.5Â°)
+                "down-left",   // 3: [112.5Â°, 157.5Â°)
+                "left",        // 4: [157.5Â°, 202.5Â°)
+                "up-left",     // 5: [202.5Â°, 247.5Â°)
+                "up",          // 6: [247.5Â°, 292.5Â°)
+                "up-right"     // 7: [292.5Â°, 337.5Â°)
             ];
             return SECTORS[sector] || null;
         }

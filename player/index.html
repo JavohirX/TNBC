@@ -194,37 +194,39 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.18);
         }
 
-        /* 3D Button Mechanically Pressed Animation */
+        /* 3D Button Mechanically Pressed Animation - Telegram UI Blue */
         .btn-3d-dark:active, .btn-3d-dark.active {
             transform: translateY(3px);
             box-shadow: 
                 0 1px 0 #090a10,
                 0 2px 4px rgba(0, 0, 0, 0.8),
                 inset 0 2px 5px rgba(0, 0, 0, 0.6),
-                0 0 10px rgba(56, 189, 248, 0.4);
-            background: linear-gradient(180deg, #222636 0%, #161824 100%);
-            color: #38bdf8;
+                0 0 12px rgba(41, 148, 236, 0.55);
+            background: linear-gradient(180deg, #1b283d 0%, #121c2c 100%);
+            color: #2994ec;
         }
 
-        /* --- TOP SOFTKEY ROW (NOKIA TOP-LEFT & TOP-RIGHT) --- */
+        /* --- TOP SOFTKEY ROW --- */
         .softkey-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 8px;
             margin-bottom: 6px;
+            padding: 0 2px;
         }
 
-        /* Classic Nokia Horizontal Soft Keys */
+        /* Classic Nokia Horizontal Soft Keys (2x less width) */
         .btn-3d-soft {
-            flex: 1.2;
-            height: 38px;
-            border-radius: 10px;
+            width: 70px;
+            height: 36px;
+            flex: 0 0 70px;
+            border-radius: 9px;
             background: linear-gradient(180deg, #444b68 0%, #2b3046 50%, #1e2232 100%);
             color: #f1f5f9;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             font-weight: 800;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.8px;
             border-top: 1px solid rgba(255, 255, 255, 0.35);
             border-left: 1px solid rgba(255, 255, 255, 0.12);
             box-shadow: 
@@ -239,54 +241,9 @@
                 0 1px 0 #0c0e16,
                 0 2px 4px rgba(0, 0, 0, 0.8),
                 inset 0 2px 5px rgba(0, 0, 0, 0.6),
-                0 0 12px rgba(245, 158, 11, 0.5);
-            background: linear-gradient(180deg, #222636 0%, #171924 100%);
-            color: #f59e0b;
-        }
-
-        .soft-label-sub {
-            font-size: 0.62em;
-            font-weight: 600;
-            color: #94a3b8;
-            margin-top: 1px;
-            letter-spacing: 0.5px;
-        }
-
-        .center-tools {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: #0f111a;
-            padding: 3px 6px;
-            border-radius: 16px;
-            border: 1px solid #232738;
-        }
-
-        .tool-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            font-size: 0.9em;
-            background: linear-gradient(180deg, #2a2e40 0%, #1a1c29 100%);
-            border: 1px solid #33384e;
-            color: #94a3b8;
-            box-shadow: 0 2px 0 #0c0d15;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.05s ease;
-        }
-
-        .tool-btn:active, .tool-btn.active {
-            transform: translateY(2px);
-            box-shadow: 0 0 0 #0c0d15;
-            color: #f59e0b;
-        }
-
-        .tool-btn.muted {
-            color: #ef4444;
-            border-color: #ef4444;
+                0 0 12px rgba(41, 148, 236, 0.55);
+            background: linear-gradient(180deg, #1b283d 0%, #121c2c 100%);
+            color: #2994ec;
         }
 
         .game-toast {
@@ -295,8 +252,8 @@
             left: 50%;
             transform: translateX(-50%) translateY(-10px);
             background: rgba(13, 14, 21, 0.95);
-            border: 1px solid #f59e0b;
-            color: #f59e0b;
+            border: 1px solid #2994ec;
+            color: #2994ec;
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 11px;
@@ -315,19 +272,21 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* --- MAIN PAD AREA (8-WAY D-PAD + ACTION CLUSTER) --- */
+        /* --- MAIN PAD AREA (OK on left + ENLARGED DPAD in middle + * 0 # on right) --- */
         .main-pad-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            gap: 8px;
             flex: 1;
-            padding: 2px 4px;
+            padding: 2px 2px;
+            width: 100%;
         }
 
-        /* 3x3 8-WAY D-PAD WITH DIAGONALS & PIVOT HUB */
+        /* GIANT RECTANGLE 8-WAY D-PAD IN THE MIDDLE */
         .dpad-8way-grid {
-            width: 154px;
+            flex: 1;
+            max-width: 255px;
             height: 154px;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -335,7 +294,7 @@
             gap: 4px;
             background: #11131e;
             padding: 5px;
-            border-radius: 20px;
+            border-radius: 16px;
             border: 2px solid #24283c;
             box-shadow: 
                 0 6px 18px rgba(0, 0, 0, 0.75),
@@ -366,8 +325,9 @@
         }
 
         .dpad-diagonal:active, .dpad-diagonal.active {
-            color: #38bdf8;
-            background: linear-gradient(180deg, #1f2333 0%, #131520 100%);
+            color: #2994ec;
+            background: linear-gradient(180deg, #1b283d 0%, #121c2c 100%);
+            box-shadow: 0 0 10px rgba(41, 148, 236, 0.4);
         }
 
         /* D-Pad Center Pivot Hub (neutral dead-zone) */
@@ -378,24 +338,14 @@
             pointer-events: none;
         }
 
-        /* --- RIGHT ACTION AREA (OK + *, 0, # CLUSTER) --- */
-        .action-cluster {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding-right: 2px;
-        }
-
-        /* 3D Action / OK Button - Matches dark slate keycap aesthetic */
+        /* 3D Action / OK Button - Rectangular keycap on the left side */
         .btn-3d-fire {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
+            width: 58px;
+            height: 154px;
+            border-radius: 12px;
             background: linear-gradient(180deg, #373c52 0%, #242838 52%, #191c28 100%);
             color: #f1f5f9;
-            font-size: 1.2em;
+            font-size: 1.15em;
             font-weight: 800;
             letter-spacing: 0.8px;
             border-top: 1px solid rgba(255, 255, 255, 0.25);
@@ -405,6 +355,8 @@
                 0 4px 0 #090a10,
                 0 6px 12px rgba(0, 0, 0, 0.65),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            flex-shrink: 1;
+            min-width: 44px;
         }
 
         .btn-3d-fire:active, .btn-3d-fire.active {
@@ -413,42 +365,63 @@
                 0 1px 0 #090a10,
                 0 2px 4px rgba(0, 0, 0, 0.8),
                 inset 0 2px 5px rgba(0, 0, 0, 0.6),
-                0 0 12px rgba(56, 189, 248, 0.45);
-            background: linear-gradient(180deg, #222636 0%, #161824 100%);
-            color: #38bdf8;
+                0 0 14px rgba(41, 148, 236, 0.6);
+            background: linear-gradient(180deg, #1b283d 0%, #121c2c 100%);
+            color: #2994ec;
         }
 
-        /* 3-Key Horizontal Row for *, 0, # */
-        .key-row-3 {
+        /* 3-Key Vertical Column for *, 0, # */
+        .key-col-3 {
             display: flex;
-            gap: 7px;
+            flex-direction: column;
+            gap: 5px;
             align-items: center;
+            justify-content: space-between;
+            height: 154px;
+            flex-shrink: 0;
         }
 
         .btn-3d-trio {
-            width: 44px;
-            height: 44px;
+            width: 46px;
+            height: 46px;
             border-radius: 9px;
             font-size: 1.15em;
             font-weight: 800;
+            flex: 1;
         }
 
         /* Small screens */
-        @media (max-width: 350px) {
+        @media (max-width: 360px) {
+            .softkey-row {
+                gap: 4px;
+            }
+            .btn-3d-soft {
+                width: 58px;
+                height: 32px;
+                flex: 0 0 58px;
+                font-size: 0.72rem;
+            }
+            .main-pad-row {
+                gap: 5px;
+            }
+            .btn-3d-fire {
+                width: 48px;
+                height: 140px;
+                font-size: 0.95em;
+            }
             .dpad-8way-grid {
-                width: 136px;
-                height: 136px;
+                height: 140px;
                 gap: 3px;
                 padding: 4px;
             }
-            .btn-3d-fire {
-                width: 62px;
-                height: 62px;
-                font-size: 0.88em;
+            .key-col-3 {
+                height: 140px;
+                gap: 4px;
             }
             .btn-3d-trio {
-                width: 38px;
-                height: 38px;
+                width: 40px;
+                height: 42px;
+                font-size: 1.05em;
             }
         }
 
@@ -504,25 +477,24 @@
 
         <!-- LOWER CONTROLS PANEL (3D RETRO PHONE) -->
         <div class="mobile-controls-panel">
-            <!-- TOP SOFTKEYS (NOKIA TOP-LEFT & TOP-RIGHT) -->
+            <!-- TOP SOFTKEYS: OPTNS (LEFT) & BACK (RIGHT) -->
             <div class="softkey-row">
-                <button id="btn-lsk" class="ctrl-btn btn-3d btn-3d-soft" data-key="F1" aria-label="Left Soft Key">
-                    <span>OPTIONS</span>
-                    <span class="soft-label-sub">LSK</span>
+                <button id="btn-lsk" class="ctrl-btn btn-3d btn-3d-soft" data-key="F1" aria-label="Options">
+                    <span>OPTNS</span>
                 </button>
-                <div class="center-tools">
-                    <button id="btn-mute" class="ctrl-btn tool-btn" title="Toggle Sound (or press M)">🔊</button>
-                    <button id="btn-reset" class="ctrl-btn tool-btn" title="Restart Game">⟲</button>
-                </div>
-                <button id="btn-rsk" class="ctrl-btn btn-3d btn-3d-soft" data-key="F2" aria-label="Right Soft Key">
+                <button id="btn-rsk" class="ctrl-btn btn-3d btn-3d-soft" data-key="F2" aria-label="Back">
                     <span>BACK</span>
-                    <span class="soft-label-sub">RSK</span>
                 </button>
             </div>
 
-            <!-- MAIN GAME CONTROLS: 8-WAY D-PAD (LEFT) + OK & *,0,# (RIGHT) -->
+            <!-- MAIN GAME CONTROLS: OK (LEFT) + ENLARGED RECTANGLE NAVIGATION (MIDDLE) + *,0,# (RIGHT) -->
             <div class="main-pad-row">
-                <!-- 3x3 8-Way D-Pad with Diagonals & Center Pivot Hub -->
+                <!-- Left: Rectangular OK Button -->
+                <button id="btn-ok" class="ctrl-btn btn-3d btn-3d-fire" data-key="Enter" aria-label="OK">
+                    <span>OK</span>
+                </button>
+
+                <!-- Middle: Giant Rectangle 8-Way D-Pad -->
                 <div class="dpad-8way-grid" id="dpad-grid">
                     <!-- Row 1: Up-Left, Up, Up-Right -->
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowUp,ArrowLeft" data-dir="up-left" aria-label="Up-Left">↖</button>
@@ -540,19 +512,11 @@
                     <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowDown,ArrowRight" data-dir="down-right" aria-label="Down-Right">↘</button>
                 </div>
 
-                <!-- Right Thumb Action Area -->
-                <div class="action-cluster">
-                    <!-- Primary 3D OK Button -->
-                    <button class="ctrl-btn btn-3d btn-3d-fire" data-key="Enter" aria-label="OK">
-                        <span>OK</span>
-                    </button>
-
-                    <!-- 3-Key Row: Star (*), Zero (0), Hash (#) -->
-                    <div class="key-row-3">
-                        <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="NumpadAsterisk" aria-label="Star Key">✱</button>
-                        <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="Digit0" aria-label="Zero Key">0</button>
-                        <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="NumpadDivide" aria-label="Hash Key">#</button>
-                    </div>
+                <!-- Right: Star (*), Zero (0), Hash (#) Placed Vertically -->
+                <div class="key-col-3">
+                    <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="NumpadAsterisk" aria-label="Star Key">✱</button>
+                    <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="Digit0" aria-label="Zero Key">0</button>
+                    <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="NumpadDivide" aria-label="Hash Key">#</button>
                 </div>
             </div>
         </div>
@@ -619,7 +583,7 @@
         window.addEventListener('click', ensureExpandedOnGesture, { passive: true });
 
         // Explicit cache buster to guarantee fresh asset loading across mobile/TMA webviews
-        const APP_BUILD_HASH = "v20261022_b9";
+        const APP_BUILD_HASH = "v20261022_b10";
         import(`../engine/main.js?v=${APP_BUILD_HASH}`).then(({ startNativeEngine }) => {
             return startNativeEngine(`../assets/`, APP_BUILD_HASH);
         }).catch(err => {
