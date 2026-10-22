@@ -22,16 +22,22 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           script: |
             set -e
+            SUDO=""
+            if command -v sudo >/dev/null 2>&1 && [ "$USER" != "root" ]; then
+              SUDO="sudo"
+            fi
+
             echo "=== 1. Ensuring target directory exists ==="
-            sudo mkdir -p /var/www/nightmare
-            sudo chown -R $USER:$USER /var/www/nightmare
+            $SUDO mkdir -p /var/www/nightmare
+            $SUDO chown -R $USER:$USER /var/www/nightmare
 
             echo "=== 2. Pulling latest code ==="
             if [ -d "/var/www/nightmare/.git" ]; then
               cd /var/www/nightmare
-              git pull origin main || git pull origin master
+              git fetch origin main
+              git reset --hard origin/main
             else
-              git clone ${{ github.server_url }}/${{ github.repository }} /var/www/nightmare
+              git clone https://github.com/JavohirX/TNBC /var/www/nightmare
               cd /var/www/nightmare
             fi
 
@@ -43,8 +49,8 @@ jobs:
             ./venv/bin/pip install aiogram python-dotenv
 
             echo "=== 4. Reloading Nginx & Restarting Bot Service ==="
-            sudo systemctl reload nginx || true
-            sudo systemctl restart nightmare-bot || true
+            $SUDO systemctl reload nginx || true
+            $SUDO systemctl restart nightmare-bot || true
 
             echo "=== Deployment to VPS Completed Successfully! ==="
 
