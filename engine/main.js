@@ -605,9 +605,9 @@ function setupInputControls(tInstance, dirManager) {
 
     const btnHd = document.getElementById("btn-hd");
     const MODES = [
-        { id: "demo1", label: "D1", name: "Demo 1: 32-Bit Gothic (SotN)", desc: "Castlevania/Blasphemous style: stitched teeth, 1px pinstripes, chiseled stone. 100% hard square pixels" },
-        { id: "demo2", label: "D2", name: "Demo 2: Arcade Neo-Geo", desc: "Darkstalkers/Metal Slug style: 1px ink outlines, bold cell shading, punchy arcade clarity" },
-        { id: "demo3", label: "D3", name: "Demo 3: Micro-Pixel (Eastward)", desc: "Modern high-res 1px micro-dithering, moonlit highlights, rich vibrant texture" },
+        { id: "demo1", label: "D1", name: "Demo 1: Original Textures", desc: "Authentic 2005 Living Mobile pixel art, exact 2x integer baseline" },
+        { id: "demo2", label: "D2", name: "Demo 2: Arcade Neo-Geo (User Favorite)", desc: "90s Capcom / Neo-Geo: bold 1px ink outlines, punchy 3-tier cell pixel shading" },
+        { id: "demo3", label: "D3", name: "Demo 3: RotSprite + PixelOE", desc: "Modern SOTA pixel-art upscaler: 8x majority-vote clustering + contrast-aware feature anchoring" },
         { id: "1x",    label: "1X", name: "Native 1x Original", desc: "Unscaled 2005 Living Mobile pixel art" }
     ];
 

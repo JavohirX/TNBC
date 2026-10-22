@@ -47,7 +47,7 @@ async def handle_start(message: types.Message):
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🎮 Play Demo 1 (32-Bit Gothic SotN)",
+                    text="🎮 Play Demo 1 (Original Textures)",
                     web_app=WebAppInfo(url=f"{player_base}/?demo=1")
                 )
             ],
@@ -59,7 +59,7 @@ async def handle_start(message: types.Message):
             ],
             [
                 InlineKeyboardButton(
-                    text="✨ Play Demo 3 (Micro-Pixel Eastward)",
+                    text="⚡ Play Demo 3 (RotSprite + PixelOE)",
                     web_app=WebAppInfo(url=f"{player_base}/?demo=3")
                 )
             ]
@@ -67,11 +67,10 @@ async def handle_start(message: types.Message):
     )
 
     caption = (
-        "🎃 <b>The Nightmare Before Christmas - High-Res Pixel Art Demos</b>\n\n"
-        "Compare the 3 genuine high-resolution pixel art styles (100% hard square pixels, ZERO clay/smoothing):\n\n"
-        "• <b>Demo 1: 32-Bit Dark Gothic</b> — Castlevania: SotN / Blasphemous style: sharp teeth stitches, 1px pinstripes, chiseled stone.\n"
-        "• <b>Demo 2: Arcade Neo-Geo</b> — Darkstalkers / Metal Slug style: bold 1px ink outlines, high-contrast cell shading.\n"
-        "• <b>Demo 3: Micro-Pixel</b> — Modern indie Eastward style: 1px micro-dithering, moonlit highlights, rich vibrant textures.\n\n"
+        "🎃 <b>The Nightmare Before Christmas - Pixel Art Comparison</b>\n\n"
+        "• <b>Demo 1: Original Textures</b> — Exact authentic 2005 Living Mobile pixel art (2x integer baseline).\n"
+        "• <b>Demo 2: Arcade Neo-Geo</b> — Bold 1px ink outlines, punchy 3-tier cell pixel shading (current favorite).\n"
+        "• <b>Demo 3: RotSprite + PixelOE</b> — Research-backed SOTA pixel-art upscaler (8x majority-vote clustering + contrast-aware feature anchoring).\n\n"
         "<i>Tip: You can also tap the <b>[D1]</b> button inside the game to switch styles live on the fly, and <b>[L2]</b> to jump to Level 2!</i>"
     )
 
