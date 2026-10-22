@@ -1083,6 +1083,11 @@ export class i extends l {
             if (typeof args[0] === 'number') return this._i_laser_a(args[0]);
             return i.prototype._a_2.apply(this, args);
         }
+        if (args.length === 2) {
+            if (typeof args[0] === 'number') return this.void_a(args[0], args[1]);
+            return super.a(args[0], args[1]);
+        }
+        return super.a(...args);
     }
 
     b(...args) {

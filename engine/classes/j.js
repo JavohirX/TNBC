@@ -6,22 +6,16 @@ export class j {
     static var_int_a = 0;
     
     static _a_0() {
-    if (j.var_int_a >= 0 && j.var_javax_microedition_media_Player_a != null) {
-    try {
-    j.var_javax_microedition_media_Player_a.stop();
-    }
-    catch (exception) {}
-    try {
-    j.var_javax_microedition_media_Player_a.deallocate();
-    }
-    catch (exception) {}
-    try {
-    j.var_javax_microedition_media_Player_a.close();
-    }
-    catch (exception) {}
-    j.var_javax_microedition_media_Player_a = null;
-    }
-    j.var_int_a = -1;
+        if (typeof AudioManager !== 'undefined') {
+            try { AudioManager.stopAudio(); } catch (e) {}
+        }
+        if (j.var_int_a >= 0 && j.var_javax_microedition_media_Player_a != null) {
+            try { j.var_javax_microedition_media_Player_a.stop(); } catch (exception) {}
+            try { j.var_javax_microedition_media_Player_a.deallocate(); } catch (exception) {}
+            try { j.var_javax_microedition_media_Player_a.close(); } catch (exception) {}
+            j.var_javax_microedition_media_Player_a = null;
+        }
+        j.var_int_a = -1;
     }
     
 
@@ -34,7 +28,7 @@ export class j {
                 }
                 return;
             }
-            if (j.var_int_a >= 0 && j.var_javax_microedition_media_Player_a) {
+            if (j.var_int_a >= 0) {
                 if (j.var_int_a === n2 && (n2 === 3 || n2 === 4 || n2 === 5)) {
                     return;
                 }

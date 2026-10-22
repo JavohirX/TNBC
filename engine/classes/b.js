@@ -154,15 +154,8 @@ export class b extends i {
     }
 
     a(...args) {
-        const len = args.length;
-        // Search available overload functions
-        for (let idx = 0; idx < 12; idx++) {
-            const fn = this[`_a_${idx}`];
-            if (fn && fn.length === len) {
-                return fn.apply(this, args);
-            }
-        }
-        // Fallback to first overload if found
-        if (this[`_a_0`]) return this[`_a_0`].apply(this, args);
+        if (args.length === 0) return this._a_1();
+        if (args.length === 3) return this._a_0(...args);
+        return super.a(...args);
     }
 }

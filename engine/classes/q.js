@@ -565,7 +565,7 @@ export class q extends i {
     a(...args) {
         if (args.length === 0) return q.prototype._a_1.apply(this, args);
         if (args.length === 3) return q.prototype._a_0.apply(this, args);
-        return q.prototype._a_1.apply(this, args);
+        return super.a(...args);
     }
 
     b(...args) {

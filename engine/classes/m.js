@@ -29,13 +29,18 @@ export class m extends i {
     this.a(n2, n3, n5);
     }
     
-    b() {
+    _b_0() {
     this.var_char_a = 16;
     this.var_char_b = 0;
     this.var_char_c = 0;
     }
+
+    b(...args) {
+        if (args.length === 0) return this._b_0();
+        return super.b(...args);
+    }
     
-    a() {
+    _a_0() {
     switch (this.f_o) {
     case 0: {
     this.var_k_b.a(108, 3, 3);
@@ -235,5 +240,9 @@ export class m extends i {
     }
     i.var_n_a.var_q_a.f_e = 3;
     }
+    }
+    a(...args) {
+        if (args.length === 0) return this._a_0();
+        return super.a(...args);
     }
 }
