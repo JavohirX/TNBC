@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Pumpkin King (GBA) - Audio Vault</title>
+  <style>
+    :root {
+      --bg-primary: #0b0c10;
+      --bg-card: #14171f;
+      --bg-hover: #1f2430;
+      --accent-orange: #ff7518;
+      --accent-purple: #9b59b6;
+      --accent-green: #2ecc71;
+      --text-main: #f0f2f5;
+      --text-muted: #8b949e;
+      --border-color: #272d3d;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      background: var(--bg-primary);
+      color: var(--text-main);
+      padding: 24px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .title-group h1 {
+      font-size: 24px;
+      color: var(--accent-orange);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .title-group p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+    .stats-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .stat-badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .stat-badge span {
+      color: var(--accent-orange);
+      font-weight: bold;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-main);
+    }
+    .tab-btn.active {
+      background: var(--accent-orange);
+      color: #000;
+      border-color: var(--accent-orange);
+    }
+    .controls {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-box:focus {
+      border-color: var(--accent-orange);
+    }
+    .filter-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-chip {
+      padding: 6px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-chip:hover, .filter-chip.active {
+      background: var(--bg-hover);
+      color: var(--text-main);
+      border-color: var(--accent-orange);
+    }
+    .filter-chip.active {
+      color: var(--accent-orange);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: all 0.2s;
+    }
+    .card:hover {
+      border-color: #3b445c;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .play-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent-orange);
+      color: #000;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.15s, background 0.15s;
+    }
+    .play-btn:hover {
+      transform: scale(1.08);
+      background: #ff8c3a;
+    }
+    .play-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+    .play-btn.playing {
+      background: var(--accent-green);
+    }
+    .card-info {
+      flex: 1;
+      overflow: hidden;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .card-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .card-tag {
+      background: #202738;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #b3c2db;
+    }
+    .card-tag.voice {
+      background: rgba(155, 89, 182, 0.2);
+      color: #d2a4e8;
+    }
+    .card-tag.combat {
+      background: rgba(231, 76, 60, 0.2);
+      color: #ff9f94;
+    }
+    .card-tag.environment {
+      background: rgba(52, 152, 219, 0.2);
+      color: #8acaff;
+    }
+    .card-actions a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      border-radius: 6px;
+    }
+    .card-actions a:hover {
+      color: var(--accent-orange);
+      background: var(--bg-hover);
+    }
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title-group">
+        <h1>🎃 The Pumpkin King — GBA Audio Vault</h1>
+        <p>Reverse-engineered 16-bit WAV Sound Effects & DirectSound sequences from the Game Boy Advance ROM</p>
+      </div>
+      <div class="stats-bar">
+        <div class="stat-badge">SFX (WAV): <span>63</span></div>
+        <div class="stat-badge">BGM (MIDI): <span>22</span></div>
+        <div class="stat-badge">SoundFont: <span>10 MB</span></div>
+      </div>
+    </header>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('sfx')">Sound Effects & Voices (WAV)</button>
+      <button class="tab-btn" onclick="switchTab('bgm')">Soundtrack & Sequences (MIDI)</button>
+    </div>
+
+    <div id="sfx-view">
+      <div class="controls">
+        <input type="text" id="sfx-search" class="search-box" placeholder="Search sound effects (e.g., whip, jack, oogie, hit, jump)..." oninput="filterCards()">
+        <div class="filter-group">
+          <div class="filter-chip active" onclick="setFilter('all', this)">All</div>
+          <div class="filter-chip" onclick="setFilter('Voice', this)">Voices</div>
+          <div class="filter-chip" onclick="setFilter('Combat', this)">Combat / Whip</div>
+          <div class="filter-chip" onclick="setFilter('Environment', this)">Environment</div>
+          <div class="filter-chip" onclick="setFilter('UI', this)">UI</div>
+        </div>
+      </div>
+
+      <div class="grid" id="sfx-grid">
+
+        <div class="card sfx-card" data-category="UI" data-name="sfx 00 menu cursor tick">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_00_menu_cursor_tick.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 00 Menu Cursor Tick</div>
+            <div class="card-meta">
+              <span class="card-tag ui">UI</span>
+              <span>0.046s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_00_menu_cursor_tick.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Combat" data-name="sfx 01 whip soul robber swing">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_01_whip_soul_robber_swing.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 01 Whip Soul Robber Swing</div>
+            <div class="card-meta">
+              <span class="card-tag combat">Combat</span>
+              <span>0.687s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_01_whip_soul_robber_swing.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 02 jack footstep hard">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_02_jack_footstep_hard.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 02 Jack Footstep Hard</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.229s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_02_jack_footstep_hard.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 03 jack footstep soft">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_03_jack_footstep_soft.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 03 Jack Footstep Soft</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.152s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_03_jack_footstep_soft.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Combat" data-name="sfx 04 whip grapple latch">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_04_whip_grapple_latch.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 04 Whip Grapple Latch</div>
+            <div class="card-meta">
+              <span class="card-tag combat">Combat</span>
+              <span>1.45s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_04_whip_grapple_latch.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Combat" data-name="sfx 05 whip stretch loop">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_05_whip_stretch_loop.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 05 Whip Stretch Loop</div>
+            <div class="card-meta">
+              <span class="card-tag combat">Combat</span>
+              <span>1.096s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_05_whip_stretch_loop.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 06 jump takeoff whoosh">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_06_jump_takeoff_whoosh.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 06 Jump Takeoff Whoosh</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.48s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_06_jump_takeoff_whoosh.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 07 landing thud">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_07_landing_thud.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 07 Landing Thud</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.217s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_07_landing_thud.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Combat" data-name="sfx 08 melee hit impact">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_08_melee_hit_impact.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 08 Melee Hit Impact</div>
+            <div class="card-meta">
+              <span class="card-tag combat">Combat</span>
+              <span>0.363s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_08_melee_hit_impact.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Combat" data-name="sfx 09 enemy hit clatter">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_09_enemy_hit_clatter.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 09 Enemy Hit Clatter</div>
+            <div class="card-meta">
+              <span class="card-tag combat">Combat</span>
+              <span>0.222s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_09_enemy_hit_clatter.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Combat" data-name="sfx 10 bone crack smash">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_10_bone_crack_smash.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 10 Bone Crack Smash</div>
+            <div class="card-meta">
+              <span class="card-tag combat">Combat</span>
+              <span>0.678s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_10_bone_crack_smash.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 11 wooden box break">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_11_wooden_box_break.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 11 Wooden Box Break</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.988s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_11_wooden_box_break.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 12 coin pickup sparkle">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_12_coin_pickup_sparkle.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 12 Coin Pickup Sparkle</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.207s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_12_coin_pickup_sparkle.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 13 health heart pickup">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_13_health_heart_pickup.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 13 Health Heart Pickup</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>1.968s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_13_health_heart_pickup.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="UI" data-name="sfx 14 ui select confirm">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_14_ui_select_confirm.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 14 Ui Select Confirm</div>
+            <div class="card-meta">
+              <span class="card-tag ui">UI</span>
+              <span>0.128s</span>
+              <span>15000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_14_ui_select_confirm.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="UI" data-name="sfx 15 ui cancel back">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_15_ui_cancel_back.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 15 Ui Cancel Back</div>
+            <div class="card-meta">
+              <span class="card-tag ui">UI</span>
+              <span>0.391s</span>
+              <span>15000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_15_ui_cancel_back.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="UI" data-name="sfx 16 ui error buzz">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_16_ui_error_buzz.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 16 Ui Error Buzz</div>
+            <div class="card-meta">
+              <span class="card-tag ui">UI</span>
+              <span>0.241s</span>
+              <span>15000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_16_ui_error_buzz.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 17 heavy gate slam">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_17_heavy_gate_slam.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 17 Heavy Gate Slam</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.678s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_17_heavy_gate_slam.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Environment" data-name="sfx 18 door creak spooky">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_18_door_creak_spooky.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 18 Door Creak Spooky</div>
+            <div class="card-meta">
+              <span class="card-tag environment">Environment</span>
+              <span>1.379s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_18_door_creak_spooky.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 19 potion drink splash">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_19_potion_drink_splash.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 19 Potion Drink Splash</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.164s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_19_potion_drink_splash.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 20 fire burst ignite">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_20_fire_burst_ignite.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 20 Fire Burst Ignite</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.375s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_20_fire_burst_ignite.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 21 flame crackle loop">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_21_flame_crackle_loop.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 21 Flame Crackle Loop</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.394s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_21_flame_crackle_loop.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 22 frog gun spit">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_22_frog_gun_spit.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 22 Frog Gun Spit</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.491s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_22_frog_gun_spit.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 23 acid gas cloud">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_23_acid_gas_cloud.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 23 Acid Gas Cloud</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.81s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_23_acid_gas_cloud.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 24 switch lever click">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_24_switch_lever_click.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 24 Switch Lever Click</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.254s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_24_switch_lever_click.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 25 stone grind slide">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_25_stone_grind_slide.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 25 Stone Grind Slide</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.497s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_25_stone_grind_slide.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Environment" data-name="sfx 26 water splash small">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_26_water_splash_small.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 26 Water Splash Small</div>
+            <div class="card-meta">
+              <span class="card-tag environment">Environment</span>
+              <span>0.415s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_26_water_splash_small.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Environment" data-name="sfx 27 water splash heavy">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_27_water_splash_heavy.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 27 Water Splash Heavy</div>
+            <div class="card-meta">
+              <span class="card-tag environment">Environment</span>
+              <span>0.199s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_27_water_splash_heavy.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 28 ghost woosh pass">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_28_ghost_woosh_pass.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 28 Ghost Woosh Pass</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.576s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_28_ghost_woosh_pass.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 29 magic projectile fire">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_29_magic_projectile_fire.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 29 Magic Projectile Fire</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.34s</span>
+              <span>22050 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_29_magic_projectile_fire.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 30 magic impact explosion">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_30_magic_impact_explosion.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 30 Magic Impact Explosion</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.25s</span>
+              <span>15000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_30_magic_impact_explosion.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 31 spike trap spring">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_31_spike_trap_spring.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 31 Spike Trap Spring</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.192s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_31_spike_trap_spring.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Environment" data-name="sfx 32 clock tower bell toll">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_32_clock_tower_bell_toll.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 32 Clock Tower Bell Toll</div>
+            <div class="card-meta">
+              <span class="card-tag environment">Environment</span>
+              <span>1.301s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_32_clock_tower_bell_toll.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Combat" data-name="sfx 33 iron clang parry">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_33_iron_clang_parry.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 33 Iron Clang Parry</div>
+            <div class="card-meta">
+              <span class="card-tag combat">Combat</span>
+              <span>0.402s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_33_iron_clang_parry.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 34 small insect chatter">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_34_small_insect_chatter.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 34 Small Insect Chatter</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.177s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_34_small_insect_chatter.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 35 spider skitter feet">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_35_spider_skitter_feet.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 35 Spider Skitter Feet</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.218s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_35_spider_skitter_feet.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 36 bat squeak flutter">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_36_bat_squeak_flutter.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 36 Bat Squeak Flutter</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.185s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_36_bat_squeak_flutter.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 37 short blip chime">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_37_short_blip_chime.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 37 Short Blip Chime</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.06s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_37_short_blip_chime.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 38 spring bounce launch">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_38_spring_bounce_launch.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 38 Spring Bounce Launch</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.378s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_38_spring_bounce_launch.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 39 card flip shuffle">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_39_card_flip_shuffle.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 39 Card Flip Shuffle</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.083s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_39_card_flip_shuffle.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 40 bubble pop liquid">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_40_bubble_pop_liquid.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 40 Bubble Pop Liquid</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.186s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_40_bubble_pop_liquid.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Environment" data-name="sfx 41 wind howl gust">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_41_wind_howl_gust.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 41 Wind Howl Gust</div>
+            <div class="card-meta">
+              <span class="card-tag environment">Environment</span>
+              <span>0.854s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_41_wind_howl_gust.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 42 cauldron bubbling">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_42_cauldron_bubbling.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 42 Cauldron Bubbling</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.916s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_42_cauldron_bubbling.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 43 energy absorb whir">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_43_energy_absorb_whir.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 43 Energy Absorb Whir</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.21s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_43_energy_absorb_whir.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Environment" data-name="sfx 44 thunder rumble deep">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_44_thunder_rumble_deep.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 44 Thunder Rumble Deep</div>
+            <div class="card-meta">
+              <span class="card-tag environment">Environment</span>
+              <span>0.975s</span>
+              <span>15000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_44_thunder_rumble_deep.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 45 lightning strike crack">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_45_lightning_strike_crack.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 45 Lightning Strike Crack</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.302s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_45_lightning_strike_crack.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 46 metal chain rattle">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_46_metal_chain_rattle.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 46 Metal Chain Rattle</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.337s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_46_metal_chain_rattle.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 47 creepy whisper ambience">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_47_creepy_whisper_ambience.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 47 Creepy Whisper Ambience</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.557s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_47_creepy_whisper_ambience.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 48 boss shield deflect">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_48_boss_shield_deflect.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 48 Boss Shield Deflect</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.308s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_48_boss_shield_deflect.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 50 electric shock zap">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_50_electric_shock_zap.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 50 Electric Shock Zap</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.109s</span>
+              <span>15000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_50_electric_shock_zap.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 51 explosive bomb detonate">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_51_explosive_bomb_detonate.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 51 Explosive Bomb Detonate</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.964s</span>
+              <span>22050 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_51_explosive_bomb_detonate.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="SFX" data-name="sfx 52 shattering glass crystal">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_52_shattering_glass_crystal.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 52 Shattering Glass Crystal</div>
+            <div class="card-meta">
+              <span class="card-tag sfx">SFX</span>
+              <span>0.852s</span>
+              <span>16000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_52_shattering_glass_crystal.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Combat" data-name="sfx 53 punch body blow">
+          <button class="play-btn" onclick="playSound('sfx_wav/sfx_53_punch_body_blow.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Sfx 53 Punch Body Blow</div>
+            <div class="card-meta">
+              <span class="card-tag combat">Combat</span>
+              <span>0.027s</span>
+              <span>22050 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/sfx_53_punch_body_blow.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 60 jack jump grunt">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_60_jack_jump_grunt.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 60 Jack Jump Grunt</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>1.15s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_60_jack_jump_grunt.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 61 jack attack shout">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_61_jack_attack_shout.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 61 Jack Attack Shout</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>1.046s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_61_jack_attack_shout.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 62 jack hurt groan">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_62_jack_hurt_groan.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 62 Jack Hurt Groan</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>0.323s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_62_jack_hurt_groan.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 63 jack death scream">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_63_jack_death_scream.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 63 Jack Death Scream</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>1.306s</span>
+              <span>22050 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_63_jack_death_scream.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 64 oogie evil laugh long">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_64_oogie_evil_laugh_long.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 64 Oogie Evil Laugh Long</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>2.929s</span>
+              <span>12000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_64_oogie_evil_laugh_long.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 65 monster growl deep">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_65_monster_growl_deep.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 65 Monster Growl Deep</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>0.626s</span>
+              <span>8000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_65_monster_growl_deep.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 66 ghost shriek high">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_66_ghost_shriek_high.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 66 Ghost Shriek High</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>0.939s</span>
+              <span>12000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_66_ghost_shriek_high.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 67 skeleton chuckle">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_67_skeleton_chuckle.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 67 Skeleton Chuckle</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>0.53s</span>
+              <span>12000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_67_skeleton_chuckle.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 68 zombie moan">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_68_zombie_moan.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 68 Zombie Moan</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>0.732s</span>
+              <span>12000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_68_zombie_moan.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+        <div class="card sfx-card" data-category="Voice" data-name="voice 69 creature yelp">
+          <button class="play-btn" onclick="playSound('sfx_wav/voice_69_creature_yelp.wav', this)" title="Play Sound">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+          <div class="card-info">
+            <div class="card-title">Voice 69 Creature Yelp</div>
+            <div class="card-meta">
+              <span class="card-tag voice">Voice</span>
+              <span>0.192s</span>
+              <span>12000 Hz</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="sfx_wav/voice_69_creature_yelp.wav" download title="Download WAV">⬇</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="bgm-view" class="hidden">
+      <div class="controls">
+        <input type="text" id="bgm-search" class="search-box" placeholder="Search BGM tracks..." oninput="filterBgm()">
+      </div>
+      <div class="grid" id="bgm-grid">
+
+        <div class="card bgm-card" data-name="bgm 01 title this is halloween">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 01 Title This Is Halloween</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>12.5 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_01_title_this_is_halloween.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 02 town square">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 02 Town Square</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>2.8 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_02_town_square.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 03 pumpkin patch action">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 03 Pumpkin Patch Action</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>9.5 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_03_pumpkin_patch_action.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 04 cemetery graveyard">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 04 Cemetery Graveyard</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>6.8 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_04_cemetery_graveyard.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 05 creepy crypt ambient">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 05 Creepy Crypt Ambient</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>2.8 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_05_creepy_crypt_ambient.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 06 sewers underground">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 06 Sewers Underground</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>5.6 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_06_sewers_underground.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 07 laboratory dr finkelstein">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 07 Laboratory Dr Finkelstein</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>4.9 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_07_laboratory_dr_finkelstein.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 08 boss battle intensity">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 08 Boss Battle Intensity</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>10.1 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_08_boss_battle_intensity.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 09 hinterlands forest">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 09 Hinterlands Forest</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>4.6 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_09_hinterlands_forest.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 10 chase lock shock barrel">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 10 Chase Lock Shock Barrel</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>5.7 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_10_chase_lock_shock_barrel.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 11 spiral hill night">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 11 Spiral Hill Night</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>9.2 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_11_spiral_hill_night.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 12 oogie boogie lair">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 12 Oogie Boogie Lair</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>10.9 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_12_oogie_boogie_lair.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 13 cutscene dialogue">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 13 Cutscene Dialogue</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>1.6 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_13_cutscene_dialogue.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 14 stage clear fanfare">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 14 Stage Clear Fanfare</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>0.6 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_14_stage_clear_fanfare.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 15 game over jingle">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 15 Game Over Jingle</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>0.6 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_15_game_over_jingle.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 16 item shop witch">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 16 Item Shop Witch</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>5.9 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_16_item_shop_witch.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 17 secret room eerie">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 17 Secret Room Eerie</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>2.0 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_17_secret_room_eerie.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 18 mini game challenge">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 18 Mini Game Challenge</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>5.0 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_18_mini_game_challenge.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 19 jack lament melody">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 19 Jack Lament Melody</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>3.5 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_19_jack_lament_melody.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 20 final boss showdown">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 20 Final Boss Showdown</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>11.0 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_20_final_boss_showdown.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 21 ending credits theme">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 21 Ending Credits Theme</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>3.8 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_21_ending_credits_theme.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+        <div class="card bgm-card" data-name="bgm 22 bonus round fast">
+          <div class="play-btn" style="background: var(--accent-purple);" title="MIDI Track">
+            <svg viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+          </div>
+          <div class="card-info">
+            <div class="card-title">Bgm 22 Bonus Round Fast</div>
+            <div class="card-meta">
+              <span class="card-tag">Format 0 MIDI</span>
+              <span>5.7 KB</span>
+            </div>
+          </div>
+          <div class="card-actions">
+            <a href="bgm_midi/bgm_22_bonus_round_fast.mid" download title="Download MIDI">⬇</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentAudio = null;
+    let currentBtn = null;
+
+    function playSound(file, btn) {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        if (currentBtn) {
+          currentBtn.classList.remove('playing');
+          currentBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+        }
+      }
+
+      if (currentBtn === btn && !currentAudio.paused) {
+        currentAudio = null;
+        currentBtn = null;
+        return;
+      }
+
+      const audio = new Audio(file);
+      currentAudio = audio;
+      currentBtn = btn;
+      btn.classList.add('playing');
+      btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+
+      audio.onended = () => {
+        btn.classList.remove('playing');
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+        currentAudio = null;
+        currentBtn = null;
+      };
+
+      audio.play().catch(e => console.error("Playback error:", e));
+    }
+
+    let activeCategory = 'all';
+
+    function setFilter(cat, chip) {
+      activeCategory = cat;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      filterCards();
+    }
+
+    function filterCards() {
+      const query = document.getElementById('sfx-search').value.toLowerCase();
+      document.querySelectorAll('.sfx-card').forEach(card => {
+        const cat = card.getAttribute('data-category');
+        const name = card.getAttribute('data-name');
+        const matchesCat = (activeCategory === 'all' || cat === activeCategory);
+        const matchesQuery = name.includes(query);
+        card.classList.toggle('hidden', !(matchesCat && matchesQuery));
+      });
+    }
+
+    function filterBgm() {
+      const query = document.getElementById('bgm-search').value.toLowerCase();
+      document.querySelectorAll('.bgm-card').forEach(card => {
+        const name = card.getAttribute('data-name');
+        card.classList.toggle('hidden', !name.includes(query));
+      });
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      if (tab === 'sfx') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('sfx-view').classList.remove('hidden');
+        document.getElementById('bgm-view').classList.add('hidden');
+      } else {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('sfx-view').classList.add('hidden');
+        document.getElementById('bgm-view').classList.remove('hidden');
+      }
+    }
+  </script>
+</body>
+</html>
