@@ -220,7 +220,7 @@ export class a {
     if (!a.var_boolean_j) {
     n3 = 0;
     n2 = 0;
-    this.var_f_a.void_a(t.var_java_lang_String_arr_b[10] + " " + (this.var_t_a.f_k / 5 + 1) + "-" + (1 + this.var_t_a.f_k % 5), t.var_int_a / 2, 2);
+    this.var_f_a.void_a(t.var_java_lang_String_arr_b[10] + " " + (Math.floor(this.var_t_a.f_k / 5) + 1) + "-" + (1 + this.var_t_a.f_k % 5), t.var_int_a / 2, 2);
     this.var_f_a.void_a();
     this.var_n_a.a(this.var_f_a, 3);
     n3 = 2 + (this.var_f_a.b(this.var_f_a.var_java_lang_String_a, this.var_t_a) + 2);
@@ -489,7 +489,7 @@ export class a {
     
     j() {
     this.var_h_a.f_d = 1;
-    this.var_f_a.void_a(t.var_java_lang_String_arr_b[10] + " " + (this.var_t_a.f_k / 5 + 1) + "-" + (1 + this.var_t_a.f_k % 5), t.var_int_a / 2, 19);
+    this.var_f_a.void_a(t.var_java_lang_String_arr_b[10] + " " + (Math.floor(this.var_t_a.f_k / 5) + 1) + "-" + (1 + this.var_t_a.f_k % 5), t.var_int_a / 2, 19);
     this.var_n_a.a(this.var_f_a, 3);
     this.var_f_a.void_a(t.var_java_lang_String_arr_c[35 + this.var_t_a.f_k], t.var_int_a / 2, this.var_f_a.f_b + 12);
     this.var_n_a.a(this.var_f_a, 3);
@@ -503,7 +503,7 @@ export class a {
     this.var_h_a.f_b = this.var_f_a.f_b + 1 - 4;
     this.var_n_a.a(this.var_h_a, 3);
     if (this.var_boolean_h) {
-    this.var_h_a.f_c = 201 + this.f_m / 4;
+    this.var_h_a.f_c = 201 + Math.floor(this.f_m / 4);
     this.var_h_a.f_a -= t.var_int_c + 5;
     this.var_n_a.a(this.var_h_a, 3);
     }
@@ -513,7 +513,7 @@ export class a {
     this.var_f_a.void_a("" + this.java_lang_String_a(this.var_n_a.var_int_a), t.var_int_a / 2 + t.var_int_c + 14, this.var_f_a.f_b);
     this.var_n_a.a(this.var_f_a, 3);
     if (this.var_boolean_i) {
-    this.var_h_a.f_c = 201 + this.f_m / 4;
+    this.var_h_a.f_c = 201 + Math.floor(this.f_m / 4);
     this.var_h_a.f_a = this.var_f_a.var_int_a + this.var_f_a.a(this.var_f_a.var_java_lang_String_a, this.var_t_a) / 2 + 2 + 5;
     this.var_n_a.a(this.var_h_a, 3);
     }
@@ -799,10 +799,10 @@ export class a {
     this.var_h_a.f_a = this.var_int_i;
     this.var_h_a.f_b = this.var_int_j;
     this.var_n_a.a(this.var_h_a, 2);
-    this.var_h_a.f_c = 104 + this.f_k / 3;
+    this.var_h_a.f_c = 104 + Math.floor(this.f_k / 3);
     this.var_h_a.f_a += t.var_int_d;
     this.var_n_a.a(this.var_h_a, 2);
-    this.var_h_a.f_c = 104 + this.f_k / 3;
+    this.var_h_a.f_c = 104 + Math.floor(this.f_k / 3);
     this.var_h_a.f_a += t.var_int_d;
     this.var_n_a.a(this.var_h_a, 2);
     } else {
@@ -816,10 +816,10 @@ export class a {
     this.var_h_a.f_a = this.var_int_i;
     this.var_h_a.f_b = this.var_int_j;
     this.var_n_a.a(this.var_h_a, 2);
-    this.var_h_a.f_c = 124 + this.f_k / 3;
+    this.var_h_a.f_c = 124 + Math.floor(this.f_k / 3);
     this.var_h_a.f_a -= t.var_int_d;
     this.var_n_a.a(this.var_h_a, 2);
-    this.var_h_a.f_c = 124 + this.f_k / 3;
+    this.var_h_a.f_c = 124 + Math.floor(this.f_k / 3);
     this.var_h_a.f_a -= t.var_int_d;
     this.var_n_a.a(this.var_h_a, 2);
     }
@@ -865,7 +865,7 @@ export class a {
     n3 = 1 + (this.var_f_a.b(this.var_f_a.var_java_lang_String_a, this.var_t_a) + 1);
     this.var_f_a.void_a(this.java_lang_String_a(), t.var_int_a / 2, n3);
     this.var_n_a.a(this.var_f_a, 3);
-    this.var_f_a.void_a(t.var_java_lang_String_arr_b[10] + " " + (n2 / 5 + 1) + "-" + (1 + n2 % 5), t.var_int_a / 2, n3 += this.var_f_a.b(this.var_f_a.var_java_lang_String_a, this.var_t_a) + 1);
+    this.var_f_a.void_a(t.var_java_lang_String_arr_b[10] + " " + (Math.floor(n2 / 5) + 1) + "-" + (1 + n2 % 5), t.var_int_a / 2, n3 += this.var_f_a.b(this.var_f_a.var_java_lang_String_a, this.var_t_a) + 1);
     this.var_f_a.void_a();
     this.var_n_a.a(this.var_f_a, 3);
     this.var_f_a.void_a("" + t.var_java_lang_String_arr_c[35 + n2], t.var_int_a / 2, n3 += this.var_f_a.b(this.var_f_a.var_java_lang_String_a, this.var_t_a) + 1);
