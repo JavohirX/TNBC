@@ -189,7 +189,7 @@ async function preloadAssets(basePath = "assets/") {
             // Pre-decode PNGs into Image cache
             if (filename.endsWith('.png') || filename === 'm') {
                 try {
-                    const is2x = filename.includes('_2x');
+                    const is2x = filename.includes('_2x') || filename.includes('_demo');
                     const img = Image.createImage(u8, 0, u8.length, is2x ? 2 : 1);
                     Image.cacheImage('/' + filename, img);
                     Image.cacheImage(filename, img);

@@ -119,7 +119,14 @@ export class Image {
             const cached = Image._preloadedImages.get(path) || 
                            Image._preloadedImages.get('/' + path) || 
                            Image._preloadedImages.get(path.startsWith('/') ? path.substring(1) : path);
-            if (cached) return cached;
+            if (cached) {
+                if ((path.includes('_2x') || path.includes('_demo')) && cached.scale !== 2) {
+                    cached.scale = 2;
+                    cached.width = Math.floor(cached.pixelWidth / 2);
+                    cached.height = Math.floor(cached.pixelHeight / 2);
+                }
+                return cached;
+            }
             if (typeof ResourceManager !== 'undefined' && ResourceManager.getResourceBytes) {
                 const bytes = ResourceManager.getResourceBytes(path);
                 if (bytes && bytes.length > 0) {

@@ -65,3 +65,4 @@ def slice_sheet(sheet_path, tile_w, tile_h, out_dir, prefix):
 if __name__ == "__main__":
     slice_sheet("assets/16x16TileSet.png", 20, 20, "scratch/sliced_tiles", "tile")
     slice_sheet("assets/32x32TileSet.png", 37, 37, "scratch/sliced_sprites", "sprite")
+

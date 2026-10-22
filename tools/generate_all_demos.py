@@ -164,3 +164,4 @@ if __name__ == "__main__":
     generate_demo("demo1", process_tile_demo1, process_sprite_demo1)
     generate_demo("demo2", process_tile_demo2, process_sprite_demo2)
     generate_demo("demo3", process_tile_demo3, process_sprite_demo3)
+

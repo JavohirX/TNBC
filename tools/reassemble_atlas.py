@@ -53,3 +53,4 @@ def reassemble_sheet(sliced_dir, out_file, scale=2, target_width=None, target_he
 if __name__ == "__main__":
     reassemble_sheet("scratch/sliced_tiles", "scratch/test_tiles_2x.png", scale=2)
     reassemble_sheet("scratch/sliced_sprites", "scratch/test_sprites_2x.png", scale=2, target_width=888, target_height=888)
+
