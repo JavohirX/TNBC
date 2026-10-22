@@ -50,10 +50,15 @@ export class b extends i {
         this.var_h_a.f_c = this.var_k_b.f_a;
     }
     
-    b() {
+    _b_0() {
         this.var_char_a = this.f_q == 11 ? (this.var_char_a | 0x16) : (this.var_char_a | 0x14);
         this.var_char_b = 64;
         this.var_char_c = 31;
+    }
+
+    b(...args) {
+        if (args.length === 0) return this._b_0();
+        return super.b(...args);
     }
     
     c() {
