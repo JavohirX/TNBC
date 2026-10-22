@@ -279,9 +279,6 @@ export class t extends FullCanvas {
     return;
     }
     if (this.var_javax_microedition_lcdui_Image_c != null) {
-    graphics.setColor(255, 255, 255);
-    graphics.fillRect(0, 0, t.var_int_a, t.var_int_b);
-    graphics.drawImage(this.var_javax_microedition_lcdui_Image_c, t.var_int_a / 2, t.var_int_b / 2, 3);
     this.var_javax_microedition_lcdui_Image_c = null;
     }
     if (a.var_int_c == 12 && t.var_javax_microedition_lcdui_Image_arr_a != null) {
@@ -464,7 +461,13 @@ export class t extends FullCanvas {
     
     B() {
     let n2 = 0;
-    this.var_a_a.void_a(-3);
+    this.w();
+    this.l();
+    if (t.var_boolean_f && t.f_n > 1) {
+        this.var_a_a.void_a(12);
+    } else {
+        this.var_a_a.void_a(13);
+    }
     this.f_k = 0;
     this.f_l = 5;
     for (n2 = 0; n2 < 100; ++n2) {
@@ -662,7 +665,7 @@ export class t extends FullCanvas {
     /* gc */
     try {
     this.var_javax_microedition_lcdui_Image_d = null;
-    this.var_javax_microedition_lcdui_Image_e = Image.createImage("/mDisneyLogo.png");
+    this.var_javax_microedition_lcdui_Image_e = null;
     this.var_javax_microedition_lcdui_Image_h = Image.createImage("/softKeys.png");
     /* gc */
     return;

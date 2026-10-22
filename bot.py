@@ -44,7 +44,7 @@ async def handle_start(message: types.Message):
             [
                 InlineKeyboardButton(
                     text="🎮 Play The Nightmare Before Christmas",
-                    web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b15")
+                    web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b16")
                 )
             ]
         ]
@@ -70,7 +70,7 @@ async def handle_play(message: types.Message):
             [
                 InlineKeyboardButton(
                     text="🎮 Play Now",
-                    web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b15")
+                    web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b16")
                 )
             ]
         ]
@@ -86,7 +86,7 @@ async def main():
         await bot.set_chat_menu_button(
             menu_button=MenuButtonWebApp(
                 text="🎮 Play Game",
-                web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b15")
+                web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b16")
             )
         )
         logging.info("Telegram persistent Menu Button configured successfully.")

@@ -579,10 +579,7 @@ export class a {
     let bl2 = false;
     let bl3 = false;
     switch (a.var_int_c) {
-    case -3: {
-    this.var_t_a.var_javax_microedition_lcdui_Image_c = this.var_t_a.var_javax_microedition_lcdui_Image_e;
-    break;
-    }
+    case -3:
     case -2: {
     this.var_t_a.var_javax_microedition_lcdui_Image_c = null;
     break;
@@ -1466,9 +1463,6 @@ export class a {
     }
     this.k();
     if (a.var_int_c == -3 || a.var_int_c == -2 || a.var_int_c == -1) {
-    ++this.f_m;
-    if (this.f_m > 50) {
-    if (a.var_int_c == -3) {
     this.var_t_a.w();
     this.var_t_a.l();
     if (t.var_boolean_f && t.f_n > 1) {
@@ -1477,25 +1471,6 @@ export class a {
     }
     this.void_a(13);
     return;
-    }
-    if (a.var_int_c == -2) {
-    this.var_t_a.w();
-    this.var_t_a.l();
-    if (t.var_boolean_f && t.f_n > 1) {
-    this.void_a(12);
-    return;
-    }
-    this.void_a(13);
-    return;
-    }
-    this.var_t_a.w();
-    this.var_t_a.l();
-    if (t.var_boolean_f && t.f_n > 1) {
-    this.void_a(12);
-    return;
-    }
-    this.void_a(13);
-    }
     }
     }
     
