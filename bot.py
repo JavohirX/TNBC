@@ -35,43 +35,25 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def handle_start(message: types.Message):
-    """Handles /start command with rich welcome card and WebApp launcher buttons for all demos."""
+    """Handles /start command with rich welcome card and WebApp launcher button."""
     base_url = WEBAPP_URL.rstrip('/')
-    # If base_url ends in player, keep it, else ensure /player/
-    if not base_url.endswith("/player"):
-        player_base = f"{base_url}/player"
-    else:
-        player_base = base_url
+    player_base = base_url if base_url.endswith("/player") else f"{base_url}/player"
 
     kb = InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🎮 Play Demo 1 (Original Textures)",
-                    web_app=WebAppInfo(url=f"{player_base}/?demo=1")
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="🎨 Play Demo 2 (Arcade Neo-Geo)",
-                    web_app=WebAppInfo(url=f"{player_base}/?demo=2")
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="⚡ Play Demo 3 (High-Res Pixel Art: xBR Geometric)",
-                    web_app=WebAppInfo(url=f"{player_base}/?demo=3")
+                    text="🎮 Play The Nightmare Before Christmas",
+                    web_app=WebAppInfo(url=f"{player_base}/")
                 )
             ]
         ]
     )
 
     caption = (
-        "🎃 <b>The Nightmare Before Christmas - Pixel Art Comparison</b>\n\n"
-        "• <b>Demo 1: Original Textures</b> — Exact authentic 2005 Living Mobile pixel art directly from the JAR.\n"
-        "• <b>Demo 2: Arcade Neo-Geo</b> — Bold 1px ink outlines, punchy 3-tier cell pixel shading (current favorite).\n"
-        "• <b>Demo 3: High-Res Pixel Art (xBR Geometric)</b> — Research-backed pattern-rule pixel-art upscaler (crisp diagonal curves, 100% hard square pixels).\n\n"
-        "<i>Tip: You can also tap the <b>[D1]</b> button inside the game to switch styles live on the fly, and <b>[L2]</b> to jump to Level 2!</i>"
+        "🎃 <b>The Nightmare Before Christmas</b>\n\n"
+        "Authentic 2005 Living Mobile J2ME classic running on a 100% native ES6 browser engine with tactile 3D retro phone keypad, true sound synthesis, and original pixel art.\n\n"
+        "Tap the button below to launch instantly!"
     )
 
     try:
@@ -88,18 +70,8 @@ async def handle_start(message: types.Message):
 
 
 @dp.message(Command("play"))
-@dp.message(Command("demo1"))
-@dp.message(Command("demo2"))
-@dp.message(Command("demo3"))
-async def handle_demos(message: types.Message):
-    """Direct demo launch commands"""
-    cmd = message.text.lower() if message.text else ""
-    demo_id = "1"
-    if "demo2" in cmd:
-        demo_id = "2"
-    elif "demo3" in cmd:
-        demo_id = "3"
-
+async def handle_play(message: types.Message):
+    """Direct play command"""
     base_url = WEBAPP_URL.rstrip('/')
     player_base = base_url if base_url.endswith("/player") else f"{base_url}/player"
 
@@ -107,19 +79,13 @@ async def handle_demos(message: types.Message):
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=f"🎮 Launch Demo {demo_id}",
-                    web_app=WebAppInfo(url=f"{player_base}/?demo={demo_id}")
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="🔄 Compare All Demos",
-                    web_app=WebAppInfo(url=f"{player_base}/?demo=1")
+                    text="🎮 Play Now",
+                    web_app=WebAppInfo(url=f"{player_base}/")
                 )
             ]
         ]
     )
-    await message.answer(f"Click below to launch <b>Demo {demo_id}</b>:", parse_mode="HTML", reply_markup=kb)
+    await message.answer("Click below to launch <b>The Nightmare Before Christmas</b>:", parse_mode="HTML", reply_markup=kb)
 
 
 async def main():

@@ -675,7 +675,6 @@
                 <div class="center-tools">
                     <button id="btn-mute" class="ctrl-btn tool-btn" title="Toggle Sound (or press M)">🔊</button>
                     <input id="volume-slider" type="range" min="0" max="100" value="35" class="vol-slider" title="Music Volume" aria-label="Music Volume">
-                    <button id="btn-hd" class="ctrl-btn tool-btn active-hd" title="Toggle Texture Style / Demo">D1</button>
                     <button id="btn-lvl" class="ctrl-btn tool-btn" title="Jump to Level 2 (Room 1)">L2</button>
                     <button id="btn-kbd-toggle" class="ctrl-btn tool-btn" title="Toggle Number Keypad">🔢</button>
                     <button id="btn-fullscreen" class="ctrl-btn tool-btn" title="Fullscreen">⛶</button>
@@ -812,7 +811,7 @@
         window.addEventListener('click', ensureExpandedOnGesture, { passive: true });
 
         // Explicit cache buster to guarantee fresh asset loading across mobile/TMA webviews
-        const APP_BUILD_HASH = "v20261022_b5";
+        const APP_BUILD_HASH = "v20261022_original";
         import(`../engine/main.js?v=${APP_BUILD_HASH}`).then(({ startNativeEngine }) => {
             return startNativeEngine(`../assets/`, APP_BUILD_HASH);
         }).catch(err => {

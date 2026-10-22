@@ -8,8 +8,6 @@ import { decodePNG } from "./PNGDecoder.js";
 
 export class Image {
     static _preloadedImages = new Map();
-    static use2x = true;
-    static activeDemo = null; // 'demo1', 'demo2', 'demo3', or null
 
     /**
      * @param {HTMLCanvasElement | HTMLImageElement | ImageBitmap | Object} source
@@ -23,16 +21,6 @@ export class Image {
         this.width = scale > 1 ? Math.floor(source.width / scale) : source.width;
         this.height = scale > 1 ? Math.floor(source.height / scale) : source.height;
         this._graphics = null;
-    }
-
-    static setDemo(demoName) {
-        Image.activeDemo = demoName;
-        if (demoName) Image.use2x = true;
-        const t = globalThis.GMIDlet?.var_t_a;
-        if (t) {
-            t.var_javax_microedition_lcdui_Image_a = Image.createImage("/16x16TileSet.png");
-            t.var_javax_microedition_lcdui_Image_b = Image.createImage("/32x32TileSet.png");
-        }
     }
 
     getWidth() {
@@ -102,37 +90,18 @@ export class Image {
 
     static createImage(...args) {
         if (args.length === 1 && typeof args[0] === 'string') {
-            let path = args[0];
-            const isTile16 = (path === '/16x16TileSet.png' || path === '16x16TileSet.png');
-            const isTile32 = (path === '/32x32TileSet.png' || path === '32x32TileSet.png');
-
-            if (Image.activeDemo) {
-                if (isTile16) path = `/16x16TileSet_${Image.activeDemo}.png`;
-                else if (isTile32) path = `/32x32TileSet_${Image.activeDemo}.png`;
-            } else if (Image.use2x) {
-                if (isTile16) path = '/16x16TileSet_2x.png';
-                else if (isTile32) path = '/32x32TileSet_2x.png';
-            } else {
-                if (isTile16) path = '/16x16TileSet.png';
-                else if (isTile32) path = '/32x32TileSet.png';
-            }
+            const path = args[0];
             const cached = Image._preloadedImages.get(path) || 
                            Image._preloadedImages.get('/' + path) || 
                            Image._preloadedImages.get(path.startsWith('/') ? path.substring(1) : path);
             if (cached) {
-                if ((path.includes('_2x') || path.includes('_demo')) && cached.scale !== 2) {
-                    cached.scale = 2;
-                    cached.width = Math.floor(cached.pixelWidth / 2);
-                    cached.height = Math.floor(cached.pixelHeight / 2);
-                }
                 return cached;
             }
             if (typeof ResourceManager !== 'undefined' && ResourceManager.getResourceBytes) {
                 const bytes = ResourceManager.getResourceBytes(path);
                 if (bytes && bytes.length > 0) {
                     const decoded = decodePNG(bytes);
-                    const scale = (path.includes('_2x') || path.includes('_demo1') || path.includes('_demo2') || path.includes('_demo3')) ? 2 : 1;
-                    const img = new Image(decoded.canvas || decoded, scale);
+                    const img = new Image(decoded.canvas || decoded, 1);
                     Image.cacheImage(path, img);
                     return img;
                 }

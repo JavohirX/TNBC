@@ -157,10 +157,6 @@ const REQUIRED_ASSETS = [
     "sp__ru", "sp__de", "sp__fr", "sp__it",
     "lp__ru", "lp__de", "lp__fr", "lp__it", "lpok",
     "16x16TileSet.png", "32x32TileSet.png",
-    "16x16TileSet_2x.png", "32x32TileSet_2x.png",
-    "16x16TileSet_demo1.png", "32x32TileSet_demo1.png",
-    "16x16TileSet_demo2.png", "32x32TileSet_demo2.png",
-    "16x16TileSet_demo3.png", "32x32TileSet_demo3.png",
     "levelSelect.png", "menuBottom.png",
     "splash.png", "mDisneyLogo.png", "softKeys.png",
     "replay0.rpl", "replay3.rpl", "replay5.rpl", "replay10.rpl",
@@ -168,7 +164,7 @@ const REQUIRED_ASSETS = [
     "replay35.rpl", "replay39.rpl", "replay40.rpl", "replay45.rpl"
 ];
 
-async function preloadAssets(basePath = "assets/", versionHash = "v20261022_b5") {
+async function preloadAssets(basePath = "assets/", versionHash = "v20261022_orig") {
     const total = REQUIRED_ASSETS.length;
     let loaded = 0;
 
@@ -189,8 +185,7 @@ async function preloadAssets(basePath = "assets/", versionHash = "v20261022_b5")
             // Pre-decode PNGs into Image cache
             if (filename.endsWith('.png') || filename === 'm') {
                 try {
-                    const is2x = filename.includes('_2x') || filename.includes('_demo');
-                    const img = Image.createImage(u8, 0, u8.length, is2x ? 2 : 1);
+                    const img = Image.createImage(u8, 0, u8.length, 1);
                     Image.cacheImage('/' + filename, img);
                     Image.cacheImage(filename, img);
                 } catch (e) {}
@@ -603,22 +598,6 @@ function setupInputControls(tInstance, dirManager) {
     window.addEventListener("pointercancel", handleGlobalRelease);
     window.addEventListener("blur", releaseAllButtons);
 
-    const btnHd = document.getElementById("btn-hd");
-    const MODES = [
-        { id: "demo1", label: "D1", name: "Demo 1: Authentic 2005 Original", desc: "100% untouched 2005 Living Mobile pixel art directly from JAR" },
-        { id: "demo2", label: "D2", name: "Demo 2: Arcade Neo-Geo (User Favorite)", desc: "90s Capcom / Neo-Geo: bold 1px ink outlines, punchy 3-tier cell pixel shading" },
-        { id: "demo3", label: "D3", name: "Demo 3: High-Res Pixel Art (xBR Geometric)", desc: "Research-backed pattern-rule pixel-art upscaler: crisp diagonal curves, 100% hard square pixels" },
-        { id: "1x",    label: "1X", name: "Native 1x Original", desc: "Unscaled 2005 Living Mobile pixel art" }
-    ];
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const demoQuery = urlParams.get("demo");
-    let currentModeIdx = 0;
-    if (demoQuery === "2") currentModeIdx = 1;
-    else if (demoQuery === "3") currentModeIdx = 2;
-    else if (demoQuery === "1x" || demoQuery === "sd") currentModeIdx = 3;
-    else currentModeIdx = 0; // Default to Demo 1
-
     function showToast(text, duration = 1800) {
         let toast = document.getElementById("game-toast");
         if (!toast) {
@@ -634,55 +613,6 @@ function setupInputControls(tInstance, dirManager) {
         toast._timer = setTimeout(() => {
             toast.classList.remove("show");
         }, duration);
-    }
-
-    function updateHdButton() {
-        if (!btnHd) return;
-        const mode = MODES[currentModeIdx];
-        btnHd.textContent = mode.label;
-        btnHd.title = `${mode.name} (Click to switch demo/style)`;
-        if (mode.id !== "1x" && mode.id !== "demo1") {
-            btnHd.classList.add("active-hd");
-            btnHd.style.color = "#f59e0b";
-            btnHd.style.borderColor = "#f59e0b";
-            btnHd.style.boxShadow = "0 0 10px rgba(245, 158, 11, 0.45)";
-        } else {
-            btnHd.classList.remove("active-hd");
-            btnHd.style.color = "#64748b";
-            btnHd.style.borderColor = "#33384e";
-            btnHd.style.boxShadow = "none";
-        }
-    }
-
-    function applyTextureMode(modeIdx, announce = true) {
-        currentModeIdx = (modeIdx + MODES.length) % MODES.length;
-        const mode = MODES[currentModeIdx];
-        if (mode.id === "1x" || mode.id === "demo1") {
-            Image.activeDemo = null;
-            Image.use2x = false;
-        } else {
-            Image.activeDemo = mode.id;
-            Image.use2x = true;
-        }
-
-        const t = GMIDlet.var_t_a;
-        if (t) {
-            t.var_javax_microedition_lcdui_Image_a = Image.createImage("/16x16TileSet.png");
-            t.var_javax_microedition_lcdui_Image_b = Image.createImage("/32x32TileSet.png");
-        }
-
-        updateHdButton();
-        if (announce) {
-            showToast(`🎨 ${mode.name}`);
-        }
-        console.log(`[Texture Switcher] Active Mode: ${mode.name} (${mode.desc})`);
-    }
-
-    if (btnHd) {
-        applyTextureMode(currentModeIdx, false);
-        btnHd.addEventListener("click", () => {
-            applyTextureMode(currentModeIdx + 1, true);
-        });
     }
 
     const btnLvl = document.getElementById("btn-lvl");
