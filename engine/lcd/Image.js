@@ -8,14 +8,19 @@ import { decodePNG } from "./PNGDecoder.js";
 
 export class Image {
     static _preloadedImages = new Map();
+    static use2x = true;
 
     /**
      * @param {HTMLCanvasElement | HTMLImageElement | ImageBitmap | Object} source
+     * @param {number} scale
      */
-    constructor(source) {
+    constructor(source, scale = 1) {
         this.source = source;
-        this.width = source.width;
-        this.height = source.height;
+        this.scale = scale;
+        this.pixelWidth = source.width;
+        this.pixelHeight = source.height;
+        this.width = scale > 1 ? Math.floor(source.width / scale) : source.width;
+        this.height = scale > 1 ? Math.floor(source.height / scale) : source.height;
         this._graphics = null;
     }
 
@@ -86,7 +91,20 @@ export class Image {
 
     static createImage(...args) {
         if (args.length === 1 && typeof args[0] === 'string') {
-            const path = args[0];
+            let path = args[0];
+            if (Image.use2x) {
+                if (path === '/16x16TileSet.png' || path === '16x16TileSet.png') {
+                    path = '/16x16TileSet_2x.png';
+                } else if (path === '/32x32TileSet.png' || path === '32x32TileSet.png') {
+                    path = '/32x32TileSet_2x.png';
+                }
+            } else {
+                if (path === '/16x16TileSet_2x.png' || path === '16x16TileSet_2x.png') {
+                    path = '/16x16TileSet.png';
+                } else if (path === '/32x32TileSet_2x.png' || path === '32x32TileSet_2x.png') {
+                    path = '/32x32TileSet.png';
+                }
+            }
             const cached = Image._preloadedImages.get(path) || 
                            Image._preloadedImages.get('/' + path) || 
                            Image._preloadedImages.get(path.startsWith('/') ? path.substring(1) : path);
@@ -95,7 +113,8 @@ export class Image {
                 const bytes = ResourceManager.getResourceBytes(path);
                 if (bytes && bytes.length > 0) {
                     const decoded = decodePNG(bytes);
-                    const img = new Image(decoded.canvas || decoded);
+                    const scale = path.includes('_2x') ? 2 : 1;
+                    const img = new Image(decoded.canvas || decoded, scale);
                     Image.cacheImage(path, img);
                     return img;
                 }
@@ -122,8 +141,9 @@ export class Image {
             const rawBytes = args[0] instanceof Uint8Array ? args[0] : new Uint8Array(args[0].buffer || args[0]);
             const offset = args[1] !== undefined ? args[1] : 0;
             const length = args[2] !== undefined ? args[2] : (rawBytes.length - offset);
+            const scale = typeof args[3] === 'number' ? args[3] : 1;
             const decoded = decodePNG(rawBytes, offset, length);
-            return new Image(decoded.canvas || decoded);
+            return new Image(decoded.canvas || decoded, scale);
         }
 
         if (args.length >= 5 && args[0] instanceof Image) {

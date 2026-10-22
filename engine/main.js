@@ -156,7 +156,9 @@ const REQUIRED_ASSETS = [
     "text__ru.txt", "text__de.txt", "text__fr.txt", "text__it.txt",
     "sp__ru", "sp__de", "sp__fr", "sp__it",
     "lp__ru", "lp__de", "lp__fr", "lp__it", "lpok",
-    "16x16TileSet.png", "32x32TileSet.png", "levelSelect.png", "menuBottom.png",
+    "16x16TileSet.png", "32x32TileSet.png",
+    "16x16TileSet_2x.png", "32x32TileSet_2x.png",
+    "levelSelect.png", "menuBottom.png",
     "splash.png", "mDisneyLogo.png", "softKeys.png",
     "replay0.rpl", "replay3.rpl", "replay5.rpl", "replay10.rpl",
     "replay14.rpl", "replay15.rpl", "replay20.rpl", "replay25.rpl",
@@ -184,7 +186,8 @@ async function preloadAssets(basePath = "assets/") {
             // Pre-decode PNGs into Image cache
             if (filename.endsWith('.png') || filename === 'm') {
                 try {
-                    const img = Image.createImage(u8, 0, u8.length);
+                    const is2x = filename.includes('_2x');
+                    const img = Image.createImage(u8, 0, u8.length, is2x ? 2 : 1);
                     Image.cacheImage('/' + filename, img);
                     Image.cacheImage(filename, img);
                 } catch (e) {}
@@ -220,18 +223,18 @@ export async function startNativeEngine(assetBase = "assets/") {
         throw new Error("Game Canvas instance (t) failed to initialize");
     }
 
-    // Connect Canvas & Graphics
+    // Connect Canvas & Graphics (480x640 native canvas with 2x scale for crisp 2x textures & fonts)
     const canvas = document.getElementById("display");
     if (!canvas) {
         throw new Error("Display canvas element #display not found in DOM");
     }
 
-    canvas.width = 240;
-    canvas.height = 320;
+    canvas.width = 480;
+    canvas.height = 640;
     const ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
     ctx.imageSmoothingEnabled = false;
 
-    const graphics = new Graphics(ctx, 240, 320);
+    const graphics = new Graphics(ctx, 240, 320, 2);
 
     // Directional Input Manager for Authentic 1-Step-Per-Tap & Auto-Repeat
     const dirManager = new DirectionInputManager(tInstance);
@@ -596,6 +599,38 @@ function setupInputControls(tInstance, dirManager) {
     window.addEventListener("pointerup", handleGlobalRelease);
     window.addEventListener("pointercancel", handleGlobalRelease);
     window.addEventListener("blur", releaseAllButtons);
+
+    const btnHd = document.getElementById("btn-hd");
+    function updateHdButton() {
+        if (!btnHd) return;
+        if (Image.use2x) {
+            btnHd.classList.add("active-hd");
+            btnHd.style.color = "#f59e0b";
+            btnHd.style.borderColor = "#f59e0b";
+            btnHd.style.boxShadow = "0 0 10px rgba(245, 158, 11, 0.45)";
+            btnHd.title = "HD Textures (Scale2x) ACTIVE - Click to switch to SD";
+        } else {
+            btnHd.classList.remove("active-hd");
+            btnHd.style.color = "#64748b";
+            btnHd.style.borderColor = "#33384e";
+            btnHd.style.boxShadow = "none";
+            btnHd.title = "SD Textures (Native 1x) ACTIVE - Click to switch to HD";
+        }
+    }
+
+    if (btnHd) {
+        updateHdButton();
+        btnHd.addEventListener("click", () => {
+            Image.use2x = !Image.use2x;
+            const t = GMIDlet.var_t_a;
+            if (t) {
+                t.var_javax_microedition_lcdui_Image_a = Image.createImage("/16x16TileSet.png");
+                t.var_javax_microedition_lcdui_Image_b = Image.createImage("/32x32TileSet.png");
+            }
+            updateHdButton();
+            console.log("Texture mode switched to:", Image.use2x ? "2x (HD)" : "1x (SD)");
+        });
+    }
 
     const btnKbd = document.getElementById("btn-kbd-toggle");
     const numKeypad = document.getElementById("num-keypad");

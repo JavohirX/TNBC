@@ -336,6 +336,15 @@
             border-color: #ef4444;
         }
 
+        .tool-btn.active-hd {
+            color: #f59e0b;
+            border-color: #f59e0b;
+            font-weight: 800;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+        }
+
         .vol-slider {
             -webkit-appearance: none;
             appearance: none;
@@ -640,6 +649,7 @@
                 <div class="center-tools">
                     <button id="btn-mute" class="ctrl-btn tool-btn" title="Toggle Sound (or press M)">🔊</button>
                     <input id="volume-slider" type="range" min="0" max="100" value="35" class="vol-slider" title="Music Volume" aria-label="Music Volume">
+                    <button id="btn-hd" class="ctrl-btn tool-btn active-hd" title="Toggle HD Textures">HD</button>
                     <button id="btn-kbd-toggle" class="ctrl-btn tool-btn" title="Toggle Number Keypad">🔢</button>
                     <button id="btn-fullscreen" class="ctrl-btn tool-btn" title="Fullscreen">⛶</button>
                     <button id="btn-reset" class="ctrl-btn tool-btn" title="Restart Game">⟲</button>
@@ -719,50 +729,41 @@
         window.addEventListener('error', (e) => console.error("Global Error:", e.message, e.filename, e.lineno, e.error));
         window.addEventListener('unhandledrejection', (e) => console.error("Unhandled Rejection:", e.reason));
 
-        // Telegram Mini App Auto-Ready & Forced Fullscreen
+        // Telegram Mini App Auto-Ready & Expanded Mode (middle mode)
         function initTelegramWebApp() {
             if (!window.Telegram?.WebApp) return;
             try {
                 const tg = window.Telegram.WebApp;
                 tg.ready();
 
-                // 1. Force Expand
+                // 1. Expand to maximum height while preserving standard Telegram navigation header
                 tg.expand();
 
-                // 2. Telegram Bot API 8.0+ True Fullscreen Mode
-                if (typeof tg.requestFullscreen === 'function') {
-                    try {
-                        tg.requestFullscreen();
-                    } catch (fsErr) {
-                        console.warn("Telegram requestFullscreen error:", fsErr);
-                    }
-                }
-
-                // 3. Disable vertical swipes to prevent pull-to-close dismiss during game taps
+                // 2. Disable vertical swipes to prevent pull-to-close dismiss during game taps
                 if (typeof tg.disableVerticalSwipes === 'function') {
                     try { tg.disableVerticalSwipes(); } catch (_) {}
                 }
 
-                // 4. Lock orientation to portrait if supported
+                // 3. Lock orientation to portrait if supported
                 if (typeof tg.lockOrientation === 'function') {
                     try { tg.lockOrientation('portrait'); } catch (_) {}
                 }
 
-                // 5. Immersive theme colors
+                // 4. Immersive theme colors
                 try {
                     if (tg.setHeaderColor) tg.setHeaderColor("#08090d");
                     if (tg.setBackgroundColor) tg.setBackgroundColor("#08090d");
                     if (tg.setBottomBarColor) tg.setBottomBarColor("#08090d");
                 } catch (_) {}
 
-                // 6. Viewport change safety handler
+                // 5. Viewport change safety handler: keep expanded
                 tg.onEvent?.('viewportChanged', () => {
                     if (!tg.isExpanded) {
                         try { tg.expand(); } catch (_) {}
                     }
                 });
 
-                console.log("Telegram Mini App SDK loaded, expanded and forced fullscreen!");
+                console.log("Telegram Mini App SDK loaded in Expanded Mode (top navigation header preserved)!");
             } catch (tgErr) {
                 console.warn("Telegram WebApp init warning:", tgErr);
             }
@@ -770,20 +771,18 @@
 
         initTelegramWebApp();
 
-        // Fallback: Re-attempt forced fullscreen on first user touch / pointer gesture
-        // (handles web browser gesture restrictions in Telegram Web)
-        const forceFullscreenOnGesture = () => {
+        // Safety handler: Ensure expanded on first user gesture without forcing full-screen takeover
+        const ensureExpandedOnGesture = () => {
             if (window.Telegram?.WebApp) {
                 const tg = window.Telegram.WebApp;
-                try { tg.expand(); } catch (_) {}
-                if (typeof tg.requestFullscreen === 'function' && !tg.isFullscreen) {
-                    try { tg.requestFullscreen(); } catch (_) {}
+                if (!tg.isExpanded) {
+                    try { tg.expand(); } catch (_) {}
                 }
             }
         };
-        window.addEventListener('pointerdown', forceFullscreenOnGesture, { passive: true });
-        window.addEventListener('touchstart', forceFullscreenOnGesture, { passive: true });
-        window.addEventListener('click', forceFullscreenOnGesture, { passive: true });
+        window.addEventListener('pointerdown', ensureExpandedOnGesture, { passive: true });
+        window.addEventListener('touchstart', ensureExpandedOnGesture, { passive: true });
+        window.addEventListener('click', ensureExpandedOnGesture, { passive: true });
 
         import { startNativeEngine } from '../engine/main.js';
         startNativeEngine('../assets/').catch(err => {

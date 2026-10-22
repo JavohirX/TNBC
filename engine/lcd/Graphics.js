@@ -16,11 +16,13 @@ export class Graphics {
      * @param {CanvasRenderingContext2D} ctx
      * @param {number} width
      * @param {number} height
+     * @param {number} scale
      */
-    constructor(ctx, width, height) {
+    constructor(ctx, width, height, scale = 1) {
         this.ctx = ctx;
         this.width = width;
         this.height = height;
+        this.scale = scale;
 
         this.transX = 0;
         this.transY = 0;
@@ -31,7 +33,13 @@ export class Graphics {
         this.clipH = height;
 
         this.currentColor = 0x000000;
-        this.ctx.imageSmoothingEnabled = false;
+        if (this.ctx) {
+            this.ctx.imageSmoothingEnabled = false;
+            this.ctx.save();
+            if (this.scale !== 1) {
+                this.ctx.scale(this.scale, this.scale);
+            }
+        }
     }
 
     setColor(r, g, b) {
@@ -39,12 +47,16 @@ export class Graphics {
             // Single integer RGB: 0xRRGGBB
             this.currentColor = r & 0xFFFFFF;
             const hex = ("000000" + this.currentColor.toString(16)).slice(-6);
-            this.ctx.fillStyle = "#" + hex;
-            this.ctx.strokeStyle = "#" + hex;
+            if (this.ctx) {
+                this.ctx.fillStyle = "#" + hex;
+                this.ctx.strokeStyle = "#" + hex;
+            }
         } else {
             this.currentColor = ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | (b & 0xFF);
-            this.ctx.fillStyle = `rgb(${r & 0xFF},${g & 0xFF},${b & 0xFF})`;
-            this.ctx.strokeStyle = `rgb(${r & 0xFF},${g & 0xFF},${b & 0xFF})`;
+            if (this.ctx) {
+                this.ctx.fillStyle = `rgb(${r & 0xFF},${g & 0xFF},${b & 0xFF})`;
+                this.ctx.strokeStyle = `rgb(${r & 0xFF},${g & 0xFF},${b & 0xFF})`;
+            }
         }
     }
 
@@ -58,14 +70,24 @@ export class Graphics {
         this.clipW = w;
         this.clipH = h;
 
-        // Reset canvas clip
+        if (!this.ctx) return;
+
+        // Reset canvas clip back to scaled base state
         this.ctx.restore();
         this.ctx.save();
+        if (this.scale !== 1) {
+            this.ctx.scale(this.scale, this.scale);
+        }
         this.ctx.translate(this.transX, this.transY);
         this.ctx.beginPath();
         this.ctx.rect(x, y, w, h);
         this.ctx.clip();
         this.ctx.imageSmoothingEnabled = false;
+
+        // Re-apply current fill and stroke color
+        const hex = ("000000" + (this.currentColor & 0xFFFFFF).toString(16)).slice(-6);
+        this.ctx.fillStyle = "#" + hex;
+        this.ctx.strokeStyle = "#" + hex;
     }
 
     clipRect(x, y, w, h) {
@@ -160,7 +182,7 @@ export class Graphics {
     }
 
     drawImage(image, x, y, anchor = 20) {
-        if (!image || !image.source) return;
+        if (!image || !image.source || !this.ctx) return;
         const w = image.getWidth();
         const h = image.getHeight();
         let dx = x;
@@ -172,14 +194,14 @@ export class Graphics {
         if (anchor & Graphics.BOTTOM) dy -= h;
         else if (anchor & Graphics.VCENTER) dy -= Math.floor(h / 2);
 
-        this.ctx.drawImage(image.source, dx, dy);
+        this.ctx.drawImage(image.source, dx, dy, w, h);
     }
 
     /**
      * drawRegion: Draws a sub-rectangle of an image with transform.
      */
     drawRegion(image, x_src, y_src, width, height, transform, x_dest, y_dest, anchor = 20) {
-        if (!image || !image.source || width <= 0 || height <= 0) return;
+        if (!image || !image.source || !this.ctx || width <= 0 || height <= 0) return;
 
         let w = width;
         let h = height;
@@ -197,9 +219,15 @@ export class Graphics {
         if (anchor & Graphics.BOTTOM) dy -= h;
         else if (anchor & Graphics.VCENTER) dy -= Math.floor(h / 2);
 
+        const imgScale = image.scale || 1;
+        const sx = x_src * imgScale;
+        const sy = y_src * imgScale;
+        const sw = width * imgScale;
+        const sh = height * imgScale;
+
         if (transform === 0) {
             // Direct blit
-            this.ctx.drawImage(image.source, x_src, y_src, width, height, dx, dy, width, height);
+            this.ctx.drawImage(image.source, sx, sy, sw, sh, dx, dy, width, height);
             return;
         }
 
@@ -240,7 +268,7 @@ export class Graphics {
                 break;
         }
 
-        this.ctx.drawImage(image.source, x_src, y_src, width, height, 0, 0, width, height);
+        this.ctx.drawImage(image.source, sx, sy, sw, sh, 0, 0, width, height);
         this.ctx.restore();
     }
 }
