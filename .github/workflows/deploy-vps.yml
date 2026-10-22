@@ -49,6 +49,8 @@ jobs:
             ./venv/bin/pip install aiogram python-dotenv
 
             echo "=== 4. Reloading Nginx & Restarting Bot Service ==="
+            $SUDO cp vps/nightmare-bot.service /etc/systemd/system/nightmare-bot.service || true
+            $SUDO systemctl daemon-reload || true
             $SUDO systemctl reload nginx || true
             $SUDO systemctl restart nightmare-bot || true
 

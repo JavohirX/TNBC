@@ -35,7 +35,7 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def handle_start(message: types.Message):
-    """Handles /start command with rich welcome card and WebApp launcher button."""
+    """Handles /start command with clean, simplified welcome message."""
     base_url = WEBAPP_URL.rstrip('/')
     player_base = base_url if base_url.endswith("/player") else f"{base_url}/player"
 
@@ -43,20 +43,24 @@ async def handle_start(message: types.Message):
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🎮 Play The Nightmare Before Christmas",
+                    text="🎮 Play Game",
                     web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b16")
                 )
             ]
         ]
     )
 
-    caption = (
+    text = (
         "🎃 <b>The Nightmare Before Christmas</b>\n\n"
-        "Authentic 2005 Living Mobile J2ME classic running on a 100% native ES6 browser engine with tactile 3D retro phone keypad, true sound synthesis, and original pixel art.\n\n"
-        "Tap the button below to launch instantly!"
+        "Tap below to play!"
     )
 
-    await message.answer(caption, parse_mode="HTML", reply_markup=kb)
+    await message.answer(
+        text,
+        parse_mode="HTML",
+        reply_markup=kb,
+        link_preview_options=types.LinkPreviewOptions(is_disabled=True)
+    )
 
 
 @dp.message(Command("play"))
@@ -69,13 +73,18 @@ async def handle_play(message: types.Message):
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🎮 Play Now",
+                    text="🎮 Play Game",
                     web_app=WebAppInfo(url=f"{player_base}/?v=20261022_b16")
                 )
             ]
         ]
     )
-    await message.answer("Click below to launch <b>The Nightmare Before Christmas</b>:", parse_mode="HTML", reply_markup=kb)
+    await message.answer(
+        "🎃 Tap below to play:",
+        parse_mode="HTML",
+        reply_markup=kb,
+        link_preview_options=types.LinkPreviewOptions(is_disabled=True)
+    )
 
 
 async def main():
