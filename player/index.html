@@ -13,7 +13,9 @@
     <style>
         :root {
             --side-btn-width: 70px;
-            --main-pad-height: 140px;
+            --main-pad-height: 168px;
+            --softkey-gap: 24px;
+            --controls-panel-height: 250px;
         }
 
         * {
@@ -68,8 +70,8 @@
         #screen-container {
             width: 100%;
             aspect-ratio: 3 / 4;
-            max-height: calc(100dvh - 215px);
-            max-width: calc((100dvh - 215px) * 0.75);
+            max-height: calc(100dvh - var(--controls-panel-height, 250px));
+            max-width: calc((100dvh - var(--controls-panel-height, 250px)) * 0.75);
             margin: 0 auto;
             position: relative;
             background: #000;
@@ -207,7 +209,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 8px;
-            margin-bottom: 6px;
+            margin-bottom: var(--softkey-gap, 24px);
             padding: 0 2px;
         }
 
@@ -278,23 +280,24 @@
             width: 100%;
         }
 
-        /* GIANT RECTANGLE 8-WAY D-PAD IN THE MIDDLE */
+        /* SQUARE 8-WAY D-PAD IN THE MIDDLE */
         .dpad-8way-grid {
-            flex: 1;
-            max-width: 250px;
-            height: var(--main-pad-height, 140px);
+            width: var(--main-pad-height, 168px);
+            height: var(--main-pad-height, 168px);
+            aspect-ratio: 1 / 1;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
-            gap: 4px;
+            gap: 5px;
             background: #11131e;
             padding: 5px;
-            border-radius: 16px;
+            border-radius: 18px;
             border: 2px solid #24283c;
             box-shadow: 
                 0 6px 18px rgba(0, 0, 0, 0.75),
                 inset 0 2px 6px rgba(0, 0, 0, 0.7);
             touch-action: none;
+            flex-shrink: 0;
         }
 
         .dpad-cell {
@@ -388,10 +391,13 @@
         @media (max-width: 360px) {
             :root {
                 --side-btn-width: 58px;
-                --main-pad-height: 130px;
+                --main-pad-height: 148px;
+                --softkey-gap: 16px;
+                --controls-panel-height: 225px;
             }
             .softkey-row {
                 gap: 4px;
+                margin-bottom: 16px;
             }
             .btn-3d-soft {
                 width: 58px;
@@ -404,18 +410,19 @@
             }
             .btn-3d-fire {
                 width: 58px;
-                height: 130px;
+                height: 148px;
                 flex: 0 0 58px;
                 font-size: 0.95em;
             }
             .dpad-8way-grid {
-                height: 130px;
+                width: 148px;
+                height: 148px;
                 gap: 3px;
                 padding: 4px;
             }
             .key-col-3 {
                 width: 58px;
-                height: 130px;
+                height: 148px;
                 flex: 0 0 58px;
                 gap: 4px;
             }
@@ -581,7 +588,7 @@
         window.addEventListener('click', ensureExpandedOnGesture, { passive: true });
 
         // Explicit cache buster to guarantee fresh asset loading across mobile/TMA webviews
-        const APP_BUILD_HASH = "v20261022_b13";
+        const APP_BUILD_HASH = "v20261022_b14";
         import(`../engine/main.js?v=${APP_BUILD_HASH}`).then(({ startNativeEngine }) => {
             return startNativeEngine(`../assets/`, APP_BUILD_HASH);
         }).catch(err => {
