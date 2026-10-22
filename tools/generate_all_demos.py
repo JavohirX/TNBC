@@ -1,8 +1,9 @@
 """
-Generates the 3 TRUE PIXEL-ART Focused Demos for The Nightmare Before Christmas:
-- Demo 1: Authentic xBR 2x (Clean Pixel-Art Pattern Interpolator, 100% Palette Preserved, Zero Blur)
-- Demo 2: 16-Bit Deluxe Pixel Art (SNES / GBA / Neo-Geo Style with 2x2 Cluster Dithering & Bone Highlights)
-- Demo 3: Authentic Nokia TFT Subpixel Matrix (Physical Hardware Pixel Aperture & Tactile LCD Separation)
+Generates 3 TRUE HIGH-RES PIXEL-ART Options for The Nightmare Before Christmas:
+- Demo 1: 32-Bit Dark Gothic (Castlevania: SotN / Blasphemous) - Stitched teeth, pinstripes, chiseled stone
+- Demo 2: 90s Capcom / Neo-Geo Arcade (Darkstalkers / Metal Slug) - Bold 1px ink outlines, punchy cell shading
+- Demo 3: Modern Indie Micro-Pixel (Eastward / Sea of Stars) - 1px micro-dithering, moonlit highlights, rich texture
+ALL 100% HARD-EDGED SQUARE PIXELS. ZERO CLAY. ZERO SMOOTHING. ZERO BLUR.
 """
 
 import os
@@ -11,174 +12,146 @@ import numpy as np
 from PIL import Image
 
 # -------------------------------------------------------------
-# DEMO 1: Authentic xBR 2x (Pixel-Art Pattern Interpolator)
+# DEMO 1: 32-Bit Dark Gothic High-Res Pixel Art (SotN / Blasphemous)
 # -------------------------------------------------------------
-def rgb_dist(c1, c2):
-    if c1[3] == 0 and c2[3] == 0:
-        return 0
-    if (c1[3] == 0) != (c2[3] == 0):
-        return 100000.0
-    dr = int(c1[0]) - int(c2[0])
-    dg = int(c1[1]) - int(c2[1])
-    db = int(c1[2]) - int(c2[2])
-    da = int(c1[3]) - int(c2[3])
-    y = 0.299 * dr + 0.587 * dg + 0.114 * db
-    u = -0.14713 * dr - 0.28886 * dg + 0.436 * db
-    v = 0.615 * dr - 0.51499 * dg - 0.10001 * db
-    return 48.0 * abs(y) + 7.0 * abs(u) + 6.0 * abs(v) + 48.0 * abs(da)
-
-def xbr2x(img_pil):
-    src = np.array(img_pil.convert('RGBA'))
-    h, w, c = src.shape
-    out = np.zeros((h * 2, w * 2, c), dtype=np.uint8)
-
-    # Pad by 2 pixels on all sides
-    pad = np.pad(src, ((2, 2), (2, 2), (0, 0)), mode='edge')
-
-    for y in range(h):
-        for x in range(w):
-            py = y + 2
-            px = x + 2
-
-            A = pad[py-1, px-1]
-            B = pad[py-1, px]
-            C = pad[py-1, px+1]
-            D = pad[py, px-1]
-            E = pad[py, px]
-            F = pad[py, px+1]
-            G = pad[py+1, px-1]
-            H = pad[py+1, px]
-            I = pad[py+1, px+1]
-
-            e0, e1, e2, e3 = E, E, E, E
-
-            # Bottom-Right (e3)
-            nl1 = rgb_dist(E, G) + rgb_dist(E, C) + rgb_dist(A, H) + rgb_dist(I, F) + 4 * rgb_dist(F, H)
-            nl2 = rgb_dist(D, B) + rgb_dist(D, I) + rgb_dist(H, A) + rgb_dist(F, C) + 4 * rgb_dist(B, D)
-            if nl1 < nl2 and not np.array_equal(F, H):
-                if not np.array_equal(E, F) and not np.array_equal(E, H):
-                    e3 = F if rgb_dist(E, F) < rgb_dist(E, H) else H
-
-            # Top-Right (e1)
-            nr1 = rgb_dist(E, A) + rgb_dist(E, I) + rgb_dist(G, B) + rgb_dist(C, F) + 4 * rgb_dist(B, F)
-            nr2 = rgb_dist(D, H) + rgb_dist(D, C) + rgb_dist(B, G) + rgb_dist(F, I) + 4 * rgb_dist(D, H)
-            if nr1 < nr2 and not np.array_equal(B, F):
-                if not np.array_equal(E, B) and not np.array_equal(E, F):
-                    e1 = B if rgb_dist(E, B) < rgb_dist(E, F) else F
-
-            # Bottom-Left (e2)
-            nb1 = rgb_dist(E, A) + rgb_dist(E, I) + rgb_dist(C, H) + rgb_dist(G, D) + 4 * rgb_dist(D, H)
-            nb2 = rgb_dist(F, B) + rgb_dist(F, G) + rgb_dist(H, C) + rgb_dist(D, A) + 4 * rgb_dist(B, F)
-            if nb1 < nb2 and not np.array_equal(D, H):
-                if not np.array_equal(E, D) and not np.array_equal(E, H):
-                    e2 = D if rgb_dist(E, D) < rgb_dist(E, H) else H
-
-            # Top-Left (e0)
-            nt1 = rgb_dist(E, G) + rgb_dist(E, C) + rgb_dist(I, B) + rgb_dist(A, D) + 4 * rgb_dist(D, B)
-            nt2 = rgb_dist(F, H) + rgb_dist(F, A) + rgb_dist(B, I) + rgb_dist(D, G) + 4 * rgb_dist(F, H)
-            if nt1 < nt2 and not np.array_equal(D, B):
-                if not np.array_equal(E, D) and not np.array_equal(E, B):
-                    e0 = D if rgb_dist(E, D) < rgb_dist(E, B) else B
-
-            out[y*2, x*2] = e0
-            out[y*2, x*2+1] = e1
-            out[y*2+1, x*2] = e2
-            out[y*2+1, x*2+1] = e3
-
-    return Image.fromarray(out)
-
-def process_tile_demo1(img):
-    return xbr2x(img)
-
-def process_sprite_demo1(img):
-    return xbr2x(img)
-
-
-# -------------------------------------------------------------
-# DEMO 2: 16-Bit Deluxe Pixel Art (SNES / GBA / Neo-Geo Style)
-# -------------------------------------------------------------
-def deluxe_pixel_art(img_pil, is_sprite=True):
-    src = np.array(img_pil.convert('RGBA'))
-    h, w, c = src.shape
-    scaled = np.array(img_pil.resize((w*2, h*2), Image.Resampling.NEAREST).convert('RGBA'))
-
-    # Bayer 2x2 ordered dither matrix
-    bayer = np.array([[0, 2], [3, 1]], dtype=np.float32) / 4.0
-
-    for y in range(h*2):
-        for x in range(w*2):
-            p = scaled[y, x]
-            if p[3] == 0:
-                continue
-
-            orig_y = y // 2
-            orig_x = x // 2
-
-            up = src[max(0, orig_y - 1), orig_x]
-            dn = src[min(h - 1, orig_y + 1), orig_x]
-            lf = src[orig_y, max(0, orig_x - 1)]
-            rt = src[orig_y, min(w - 1, orig_x + 1)]
-
-            dither_val = bayer[y % 2, x % 2]
-            lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2]
-
-            # Bone specular highlight / shading on Jack & skeletons
-            if lum > 175 and p[3] > 0:
-                if (x % 2 == 0 and y % 2 == 0) and (orig_y > 0 and src[orig_y-1, orig_x][3] == 0 or lum > 215):
-                    scaled[y, x] = [255, 255, 255, 255] # 1px specular pixel
-                elif lum < 210 and dither_val > 0.5:
-                    scaled[y, x] = [205, 210, 225, 255]
-
-            # Tile cobblestone & brick shadow dithering
-            elif 35 < lum < 145:
-                is_boundary = not (np.array_equal(p, up) and np.array_equal(p, dn) and np.array_equal(p, lf) and np.array_equal(p, rt))
-                if is_boundary and dither_val >= 0.5:
-                    scaled[y, x] = [int(p[0]*0.72), int(p[1]*0.72), int(p[2]*0.78), p[3]]
-
-    # Strict palette quantization (discrete 16-bit color ramps, zero continuous gradients)
-    out_arr = scaled.copy()
-    for ch in range(3):
-        out_arr[:, :, ch] = (np.round(out_arr[:, :, ch] / 28.0) * 28.0).clip(0, 255).astype(np.uint8)
-
-    return Image.fromarray(out_arr)
-
-def process_tile_demo2(img):
-    return deluxe_pixel_art(img, is_sprite=False)
-
-def process_sprite_demo2(img):
-    return deluxe_pixel_art(img, is_sprite=True)
-
-
-# -------------------------------------------------------------
-# DEMO 3: Authentic Nokia TFT Subpixel Matrix (Hardware Pixel Aperture)
-# -------------------------------------------------------------
-def nokia_lcd_pixel_matrix(img_pil):
+def process_tile_demo1(img_pil):
     w, h = img_pil.size
-    scaled = np.array(img_pil.resize((w*2, h*2), Image.Resampling.NEAREST).convert('RGBA')).astype(np.float32)
-
+    arr = np.array(img_pil.resize((w*2, h*2), Image.Resampling.NEAREST).convert('RGBA'))
     for y in range(h*2):
         for x in range(w*2):
-            if scaled[y, x, 3] == 0:
-                continue
+            p = arr[y, x]
+            if p[3] == 0: continue
+            lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2]
+            # Micro-chisel highlights on stone block edges
+            if (x % 4 == 0 or y % 4 == 0) and lum > 80:
+                arr[y, x, :3] = np.clip(arr[y, x, :3] * 1.25, 0, 255)
+            # Fine 1px mortar line fractures
+            elif (x % 8 == 0 or y % 8 == 0) and lum < 120:
+                arr[y, x, :3] = np.clip(arr[y, x, :3] * 0.65, 0, 255)
+    return Image.fromarray(arr)
 
-            # Physical LCD subpixel matrix:
-            # (1,1) corner is the transistor shadow gap between physical liquid crystals
-            if (x % 2 == 1 and y % 2 == 1):
-                scaled[y, x, :3] *= 0.62
-            elif (x % 2 == 1 or y % 2 == 1):
-                scaled[y, x, :3] *= 0.86
+def process_sprite_demo1(img_pil):
+    w, h = img_pil.size
+    arr = np.array(img_pil.resize((w*2, h*2), Image.Resampling.NEAREST).convert('RGBA'))
+
+    # 1. Stitches on mouth (for Jack's face)
+    for y in range(2, h*2 - 2):
+        for x in range(2, w*2 - 2):
+            p = arr[y, x]
+            if p[3] > 200 and (int(p[0]) + int(p[1]) + int(p[2])) < 70:
+                up_white = arr[y-1, x, 0] > 160 and arr[y-1, x, 3] > 200
+                dn_white = arr[y+1, x, 0] > 160 and arr[y+1, x, 3] > 200
+                if up_white and dn_white:
+                    if x % 2 == 0:
+                        arr[y-1, x] = [15, 15, 20, 255]
+                        arr[y+1, x] = [15, 15, 20, 255]
+
+    # 2. 1px Chalk pinstripes on dark coat
+    for y in range(h*2):
+        for x in range(w*2):
+            p = arr[y, x]
+            lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2]
+            if p[3] > 200 and lum < 45 and y > 28:
+                if x % 3 == 0:
+                    arr[y, x] = [58, 64, 88, 255]
+
+    # 3. Eye socket inner shadow rim
+    for y in range(4, h*2 - 4):
+        for x in range(4, w*2 - 4):
+            p = arr[y, x]
+            if p[3] > 200 and (int(p[0]) + int(p[1]) + int(p[2])) < 35 and y < 30:
+                if arr[y-1, x, 0] > 150 or arr[y+1, x, 0] > 150 or arr[y, x-1, 0] > 150 or arr[y, x+1, 0] > 150:
+                    arr[y, x] = [40, 42, 58, 255]
+
+    return Image.fromarray(arr)
+
+
+# -------------------------------------------------------------
+# DEMO 2: 90s Capcom / Neo-Geo Arcade High-Res Pixel Art
+# -------------------------------------------------------------
+def process_tile_demo2(img_pil):
+    w, h = img_pil.size
+    arr = np.array(img_pil.resize((w*2, h*2), Image.Resampling.NEAREST).convert('RGBA'))
+    for y in range(h*2):
+        for x in range(w*2):
+            if arr[y, x, 3] == 0: continue
+            lum = 0.299 * arr[y, x, 0] + 0.587 * arr[y, x, 1] + 0.114 * arr[y, x, 2]
+            if lum > 160:
+                arr[y, x, :3] = np.clip(arr[y, x, :3] * 1.15, 0, 255)
+            elif lum < 80:
+                arr[y, x, :3] = np.clip(arr[y, x, :3] * 0.82, 0, 255)
+    return Image.fromarray(arr)
+
+def process_sprite_demo2(img_pil):
+    w, h = img_pil.size
+    arr = np.array(img_pil.resize((w*2, h*2), Image.Resampling.NEAREST).convert('RGBA'))
+    for y in range(h*2):
+        for x in range(w*2):
+            if arr[y, x, 3] == 0: continue
+            is_edge = False
+            for dy, dx in [(-1,0), (1,0), (0,-1), (0,1)]:
+                ny, nx = y + dy, x + dx
+                if 0 <= ny < h*2 and 0 <= nx < w*2:
+                    if arr[ny, nx, 3] == 0:
+                        is_edge = True
+                        break
+                else:
+                    is_edge = True
+                    break
+            if is_edge:
+                # 1px bold arcade ink outline
+                arr[y, x] = [12, 12, 18, 255]
             else:
-                # Core subpixel: vibrant phosphor punch
-                scaled[y, x, :3] = np.clip(scaled[y, x, :3] * 1.08, 0, 255)
+                lum = 0.299 * arr[y, x, 0] + 0.587 * arr[y, x, 1] + 0.114 * arr[y, x, 2]
+                if lum > 170:
+                    arr[y, x, :3] = np.clip(arr[y, x, :3] * 1.18, 0, 255)
+                elif 50 < lum < 120:
+                    arr[y, x, :3] = np.clip(arr[y, x, :3] * 0.82, 0, 255)
+    return Image.fromarray(arr)
 
-    out = np.clip(scaled, 0, 255).astype(np.uint8)
-    return Image.fromarray(out)
 
-def process_tile_demo3(img):
-    return nokia_lcd_pixel_matrix(img)
+# -------------------------------------------------------------
+# DEMO 3: Modern Indie Micro-Pixel Art (Eastward / Sea of Stars)
+# -------------------------------------------------------------
+def process_tile_demo3(img_pil):
+    w, h = img_pil.size
+    arr = np.array(img_pil.resize((w*2, h*2), Image.Resampling.NEAREST).convert('RGBA'))
+    for y in range(h*2):
+        for x in range(w*2):
+            p = arr[y, x]
+            if p[3] == 0: continue
+            lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2]
+            # High-res micro-dither texture on stone & grass
+            if 35 < lum < 155:
+                if (x + y) % 2 == 0:
+                    arr[y, x, :3] = np.clip(arr[y, x, :3] * 1.14, 0, 255)
+                else:
+                    arr[y, x, :3] = np.clip(arr[y, x, :3] * 0.86, 0, 255)
+            elif lum > 165:
+                # Top stone rim highlight
+                if y % 2 == 0:
+                    arr[y, x, :3] = np.clip(arr[y, x, :3] * 1.15, 0, 255)
+    return Image.fromarray(arr)
 
-def process_sprite_demo3(img):
-    return nokia_lcd_pixel_matrix(img)
+def process_sprite_demo3(img_pil):
+    w, h = img_pil.size
+    arr = np.array(img_pil.resize((w*2, h*2), Image.Resampling.NEAREST).convert('RGBA'))
+    for y in range(h*2):
+        for x in range(w*2):
+            p = arr[y, x]
+            if p[3] == 0: continue
+            lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2]
+            if 40 < lum < 150:
+                # Micro-dither on cloth and skin shading
+                if (x + y) % 2 == 0:
+                    arr[y, x, :3] = np.clip(arr[y, x, :3] * 1.12, 0, 255)
+                else:
+                    arr[y, x, :3] = np.clip(arr[y, x, :3] * 0.88, 0, 255)
+            elif lum > 180:
+                # Specular bone micro-highlight
+                if y % 2 == 0 and x % 2 == 0:
+                    arr[y, x] = [255, 255, 255, 255]
+    return Image.fromarray(arr)
 
 
 # -------------------------------------------------------------

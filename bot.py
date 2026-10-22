@@ -47,19 +47,19 @@ async def handle_start(message: types.Message):
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🎮 Play Demo 1 (xBR Pixel Art)",
+                    text="🎮 Play Demo 1 (32-Bit Gothic SotN)",
                     web_app=WebAppInfo(url=f"{player_base}/?demo=1")
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="🎨 Play Demo 2 (16-Bit Deluxe)",
+                    text="🎨 Play Demo 2 (Arcade Neo-Geo)",
                     web_app=WebAppInfo(url=f"{player_base}/?demo=2")
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="📺 Play Demo 3 (Nokia LCD Matrix)",
+                    text="✨ Play Demo 3 (Micro-Pixel Eastward)",
                     web_app=WebAppInfo(url=f"{player_base}/?demo=3")
                 )
             ]
@@ -67,13 +67,12 @@ async def handle_start(message: types.Message):
     )
 
     caption = (
-        "🎃 <b>The Nightmare Before Christmas - Pixel Art Demos</b>\n\n"
-        "Compare the 3 genuine pixel-art focused approaches across Levels 1 & 2:\n\n"
-        "• <b>Demo 1: xBR Pixel Art</b> — Authentic rule-based diagonal pattern interpolator, 100% discrete original palette, zero blur.\n"
-        "• <b>Demo 2: 16-Bit Deluxe</b> — SNES/GBA/Neo-Geo style remaster with 2x2 cluster dithering, bone highlights, and high-contrast pixel ink.\n"
-        "• <b>Demo 3: Nokia LCD Matrix</b> — Authentic 2005 Nokia TFT subpixel aperture grille, tactile hardware pixel separation on OLED.\n\n"
+        "🎃 <b>The Nightmare Before Christmas - High-Res Pixel Art Demos</b>\n\n"
+        "Compare the 3 genuine high-resolution pixel art styles (100% hard square pixels, ZERO clay/smoothing):\n\n"
+        "• <b>Demo 1: 32-Bit Dark Gothic</b> — Castlevania: SotN / Blasphemous style: sharp teeth stitches, 1px pinstripes, chiseled stone.\n"
+        "• <b>Demo 2: Arcade Neo-Geo</b> — Darkstalkers / Metal Slug style: bold 1px ink outlines, high-contrast cell shading.\n"
+        "• <b>Demo 3: Micro-Pixel</b> — Modern indie Eastward style: 1px micro-dithering, moonlit highlights, rich vibrant textures.\n\n"
         "<i>Tip: You can also tap the <b>[D1]</b> button inside the game to switch styles live on the fly, and <b>[L2]</b> to jump to Level 2!</i>"
-    )
     )
 
     try:

@@ -605,9 +605,9 @@ function setupInputControls(tInstance, dirManager) {
 
     const btnHd = document.getElementById("btn-hd");
     const MODES = [
-        { id: "demo1", label: "D1", name: "Demo 1: xBR Pixel Art", desc: "Pure pixel-art pattern interpolation, 100% discrete palette, zero blur" },
-        { id: "demo2", label: "D2", name: "Demo 2: 16-Bit Deluxe", desc: "SNES/GBA style, 2x2 cluster dithering & bone highlights" },
-        { id: "demo3", label: "D3", name: "Demo 3: Nokia LCD Matrix", desc: "Physical TFT subpixel aperture grille, tactile hardware pixels" },
+        { id: "demo1", label: "D1", name: "Demo 1: 32-Bit Gothic (SotN)", desc: "Castlevania/Blasphemous style: stitched teeth, 1px pinstripes, chiseled stone. 100% hard square pixels" },
+        { id: "demo2", label: "D2", name: "Demo 2: Arcade Neo-Geo", desc: "Darkstalkers/Metal Slug style: 1px ink outlines, bold cell shading, punchy arcade clarity" },
+        { id: "demo3", label: "D3", name: "Demo 3: Micro-Pixel (Eastward)", desc: "Modern high-res 1px micro-dithering, moonlit highlights, rich vibrant texture" },
         { id: "1x",    label: "1X", name: "Native 1x Original", desc: "Unscaled 2005 Living Mobile pixel art" }
     ];
 
