@@ -31,6 +31,20 @@ class RetroMidiSynthesizer {
         this.noteIndex = 0;
         this.currentTrack = null;
 
+        // Dedicated Gameplay Channel (for high-fidelity GBA rotation)
+        this.gameplayFilter = null;
+        this.gameplayTrackGain = null;
+        this.currentGameplaySource = null;
+        this.currentGameplayGain = null;
+        this.currentGameplayIndex = -1;
+        this.gameplayAudioBuffers = new Map();
+        this.isGameplayPlaying = false;
+        this.trackNames = [
+            'Town Square Exploration',
+            'Cemetery & Graveyard',
+            'Title Theme (This Is Halloween)'
+        ];
+
         this._setupAutoUnlock();
     }
 
@@ -72,8 +86,23 @@ class RetroMidiSynthesizer {
                 const currentGain = this.muted ? 0 : (this.volume * 0.28);
                 this.masterGain.gain.setValueAtTime(currentGain, this.ctx.currentTime);
 
-                // Audio graph: Voices -> MasterFilter -> Compressor -> MasterGain -> Destination
+                // Audio graph for J2ME synth: Voices -> MasterFilter -> Compressor -> MasterGain -> Destination
                 this.filterNode.connect(this.compressor);
+
+                // Dedicated Gameplay GBA Channel:
+                // Warm lowpass filter at 8500 Hz: softens harsh DAC hiss while keeping orchestra crisp & vibrant
+                this.gameplayFilter = this.ctx.createBiquadFilter();
+                this.gameplayFilter.type = "lowpass";
+                this.gameplayFilter.frequency.setValueAtTime(8500, this.ctx.currentTime);
+                this.gameplayFilter.Q.setValueAtTime(0.5, this.ctx.currentTime);
+
+                // Gameplay Track Gain (tuned to 0.85 for seamless loudness parity with J2ME synth menu)
+                this.gameplayTrackGain = this.ctx.createGain();
+                this.gameplayTrackGain.gain.setValueAtTime(0.85, this.ctx.currentTime);
+
+                this.gameplayFilter.connect(this.gameplayTrackGain);
+                this.gameplayTrackGain.connect(this.compressor);
+
                 this.compressor.connect(this.masterGain);
                 this.masterGain.connect(this.ctx.destination);
 
@@ -97,11 +126,46 @@ class RetroMidiSynthesizer {
         this.noiseBuffer = buffer;
     }
 
+    getTrackUrl(filename) {
+        if (typeof window !== 'undefined' && window.location) {
+            const origin = window.location.origin;
+            if (origin && origin !== 'null' && window.location.protocol.startsWith('http')) {
+                return `${origin}/assets/audio_mp3/gba_tuned/${filename}`;
+            }
+            const pathname = window.location.pathname;
+            if (pathname.includes('/player/')) {
+                return `../assets/audio_mp3/gba_tuned/${filename}`;
+            }
+        }
+        return `assets/audio_mp3/gba_tuned/${filename}`;
+    }
+
+    async preloadGameplayTracks() {
+        if (typeof window === 'undefined') return;
+        this._initContext();
+        if (!this.ctx) return;
+        const files = ['town_square.mp3', 'cemetery_graveyard.mp3', 'title_this_is_halloween.mp3'];
+        for (let i = 0; i < files.length; i++) {
+            if (this.gameplayAudioBuffers.has(i)) continue;
+            try {
+                const url = this.getTrackUrl(files[i]);
+                const res = await fetch(url);
+                if (!res.ok) continue;
+                const arrayBuf = await res.arrayBuffer();
+                const audioBuf = await this.ctx.decodeAudioData(arrayBuf);
+                this.gameplayAudioBuffers.set(i, audioBuf);
+            } catch (e) {
+                // Background preloading warning non-fatal
+            }
+        }
+    }
+
     unlockAudio() {
         this._initContext();
         if (this.ctx && this.ctx.state === 'suspended') {
             this.ctx.resume().catch(() => {});
         }
+        this.preloadGameplayTracks().catch(() => {});
     }
 
     setVolume(vol) {
@@ -372,6 +436,11 @@ class RetroMidiSynthesizer {
         this._initContext();
         if (!this.ctx) return;
 
+        // If entering menu or playing MIDI track, smoothly fade out any gameplay music
+        if (this.isGameplayPlaying) {
+            this.fadeAndStopGameplayMusic(0.25);
+        }
+
         // If same BGM track is already playing, let it loop
         if (this.isPlaying && this.currentTrackId === id && loopCount === -1) {
             return;
@@ -586,9 +655,123 @@ class RetroMidiSynthesizer {
     }
 
     /**
+     * Start playing high-fidelity tuned GBA gameplay theme with gapless looping.
+     * Round-robin rotation across stages:
+     *   0: Town Square Exploration
+     *   1: Cemetery & Graveyard
+     *   2: Title Theme (This Is Halloween)
+     */
+    async playGameplayTrack(stageTrackIndex) {
+        if (this.muted) return;
+        this._initContext();
+        if (!this.ctx) return;
+
+        const trackIdx = Math.abs(stageTrackIndex) % 3;
+
+        // If this exact track is already looping, keep playing
+        if (this.isGameplayPlaying && this.currentGameplayIndex === trackIdx) {
+            return;
+        }
+
+        // Stop any active J2ME MIDI synth immediately (e.g. menu theme)
+        this.stopMidiAudio();
+
+        // Fade out previous gameplay track smoothly if one was running
+        if (this.currentGameplaySource && this.currentGameplayGain) {
+            const prevGain = this.currentGameplayGain;
+            const prevSource = this.currentGameplaySource;
+            const now = this.ctx.currentTime;
+            try {
+                prevGain.gain.cancelScheduledValues(now);
+                prevGain.gain.setValueAtTime(prevGain.gain.value, now);
+                prevGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+                setTimeout(() => {
+                    try { prevSource.stop(); prevSource.disconnect(); prevGain.disconnect(); } catch (_) {}
+                }, 260);
+            } catch (_) {}
+            this.currentGameplaySource = null;
+            this.currentGameplayGain = null;
+        }
+
+        this.currentGameplayIndex = trackIdx;
+        this.isGameplayPlaying = true;
+
+        let buffer = this.gameplayAudioBuffers.get(trackIdx);
+        if (!buffer) {
+            try {
+                const files = ['town_square.mp3', 'cemetery_graveyard.mp3', 'title_this_is_halloween.mp3'];
+                const url = this.getTrackUrl(files[trackIdx]);
+                const res = await fetch(url);
+                const arrayBuf = await res.arrayBuffer();
+                buffer = await this.ctx.decodeAudioData(arrayBuf);
+                this.gameplayAudioBuffers.set(trackIdx, buffer);
+            } catch (err) {
+                console.warn(`[AudioManager] Failed to load gameplay track ${trackIdx}:`, err);
+                return;
+            }
+        }
+
+        if (!this.isGameplayPlaying || this.currentGameplayIndex !== trackIdx) {
+            return; // State changed during async decode
+        }
+
+        try {
+            const source = this.ctx.createBufferSource();
+            source.buffer = buffer;
+            source.loop = true;
+
+            const gainNode = this.ctx.createGain();
+            const now = this.ctx.currentTime;
+            // Smooth 0.2s fade-in for velvety start
+            gainNode.gain.setValueAtTime(0.0001, now);
+            gainNode.gain.exponentialRampToValueAtTime(1.0, now + 0.2);
+
+            source.connect(gainNode);
+            gainNode.connect(this.gameplayFilter);
+
+            source.start(now);
+            this.currentGameplaySource = source;
+            this.currentGameplayGain = gainNode;
+            console.log(`[AudioManager] Playing gameplay theme #${trackIdx + 1}: ${this.trackNames[trackIdx]}`);
+        } catch (playErr) {
+            console.warn("[AudioManager] Error starting gameplay buffer source:", playErr);
+        }
+    }
+
+    /**
+     * Exponential fade-out for gameplay music (e.g. stage complete or Jack death).
+     */
+    fadeAndStopGameplayMusic(duration = 0.3) {
+        this.isGameplayPlaying = false;
+        this.currentGameplayIndex = -1;
+        if (!this.currentGameplaySource || !this.currentGameplayGain || !this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const gainNode = this.currentGameplayGain;
+        const source = this.currentGameplaySource;
+        this.currentGameplayGain = null;
+        this.currentGameplaySource = null;
+
+        try {
+            gainNode.gain.cancelScheduledValues(now);
+            gainNode.gain.setValueAtTime(gainNode.gain.value, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            setTimeout(() => {
+                try {
+                    source.stop();
+                    source.disconnect();
+                    gainNode.disconnect();
+                } catch (_) {}
+            }, (duration + 0.05) * 1000);
+        } catch (e) {
+            try { source.stop(); } catch (_) {}
+        }
+    }
+
+    /**
      * Stop currently playing MIDI track or SFX immediately and release audio nodes.
      */
-    stopAudio() {
+    stopMidiAudio() {
         if (this.schedulerTimer) {
             clearInterval(this.schedulerTimer);
             this.schedulerTimer = null;
@@ -612,6 +795,14 @@ class RetroMidiSynthesizer {
             }
         }
         this.activeVoices.clear();
+    }
+
+    /**
+     * Stop all audio (MIDI synthesizer voices + active gameplay theme).
+     */
+    stopAudio() {
+        this.stopMidiAudio();
+        this.fadeAndStopGameplayMusic(0.15);
     }
 }
 

@@ -11,6 +11,11 @@
     <!-- Telegram Mini App WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        :root {
+            --side-btn-width: 70px;
+            --main-pad-height: 140px;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -87,7 +92,7 @@
             outline: none;
         }
 
-        /* --- MINIMALISTIC HALLOWEEN SPLASH SCREEN --- */
+        /* --- BINARY HALLOWEEN SPLASH SCREEN (PURE BLACK & PUMPKIN ORANGE) --- */
         #splash-screen {
             position: fixed;
             inset: 0;
@@ -97,9 +102,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #08090d;
+            background-color: #000000;
             z-index: 99999;
-            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
         }
 
         #splash-screen.fade-out {
@@ -113,37 +118,27 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-        }
-
-        .dev-logo {
-            width: 140px;
-            max-width: 50vw;
-            height: auto;
-            display: block;
-            image-rendering: -webkit-optimize-contrast;
-            filter: drop-shadow(0 0 16px rgba(249, 115, 22, 0.45));
-            user-select: none;
-            -webkit-user-select: none;
-            pointer-events: none;
+            width: 100%;
         }
 
         .progress-bar-wrap {
-            width: 140px;
-            max-width: 50vw;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.12);
-            border-radius: 2px;
-            margin-top: 28px;
+            width: 280px;
+            max-width: 80vw;
+            height: 16px;
+            background: #000000;
+            border: 2px solid #ff7518;
+            border-radius: 0;
+            margin: 0;
             overflow: hidden;
+            box-sizing: border-box;
         }
 
         #progress-bar-fill {
             width: 0%;
             height: 100%;
-            background: #f97316;
-            border-radius: 2px;
-            transition: width 0.15s ease-out;
-            box-shadow: 0 0 8px rgba(249, 115, 22, 0.8);
+            background: #ff7518;
+            border-radius: 0;
+            transition: width 0.1s linear;
         }
 
         /* --- 3D TACTILE RETRO CONTROLS PANEL --- */
@@ -216,11 +211,11 @@
             padding: 0 2px;
         }
 
-        /* Classic Nokia Horizontal Soft Keys (2x less width) */
+        /* Classic Nokia Horizontal Soft Keys */
         .btn-3d-soft {
-            width: 70px;
-            height: 36px;
-            flex: 0 0 70px;
+            width: var(--side-btn-width, 70px);
+            height: 35px;
+            flex: 0 0 var(--side-btn-width, 70px);
             border-radius: 9px;
             background: linear-gradient(180deg, #444b68 0%, #2b3046 50%, #1e2232 100%);
             color: #f1f5f9;
@@ -286,8 +281,8 @@
         /* GIANT RECTANGLE 8-WAY D-PAD IN THE MIDDLE */
         .dpad-8way-grid {
             flex: 1;
-            max-width: 255px;
-            height: 154px;
+            max-width: 250px;
+            height: var(--main-pad-height, 140px);
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
@@ -338,10 +333,11 @@
             pointer-events: none;
         }
 
-        /* 3D Action / OK Button - Rectangular keycap on the left side */
+        /* 3D Action / OK Button - Width matches upper OPTNS button */
         .btn-3d-fire {
-            width: 58px;
-            height: 154px;
+            width: var(--side-btn-width, 70px);
+            height: var(--main-pad-height, 140px);
+            flex: 0 0 var(--side-btn-width, 70px);
             border-radius: 12px;
             background: linear-gradient(180deg, #373c52 0%, #242838 52%, #191c28 100%);
             color: #f1f5f9;
@@ -355,8 +351,6 @@
                 0 4px 0 #090a10,
                 0 6px 12px rgba(0, 0, 0, 0.65),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
-            flex-shrink: 1;
-            min-width: 44px;
         }
 
         .btn-3d-fire:active, .btn-3d-fire.active {
@@ -370,20 +364,20 @@
             color: #2994ec;
         }
 
-        /* 3-Key Vertical Column for *, 0, # */
+        /* 3-Key Vertical Column for *, 0, # - Width matches upper BACK button */
         .key-col-3 {
             display: flex;
             flex-direction: column;
             gap: 5px;
             align-items: center;
             justify-content: space-between;
-            height: 154px;
-            flex-shrink: 0;
+            width: var(--side-btn-width, 70px);
+            height: var(--main-pad-height, 140px);
+            flex: 0 0 var(--side-btn-width, 70px);
         }
 
         .btn-3d-trio {
-            width: 46px;
-            height: 46px;
+            width: 100%;
             border-radius: 9px;
             font-size: 1.15em;
             font-weight: 800;
@@ -392,6 +386,10 @@
 
         /* Small screens */
         @media (max-width: 360px) {
+            :root {
+                --side-btn-width: 58px;
+                --main-pad-height: 130px;
+            }
             .softkey-row {
                 gap: 4px;
             }
@@ -405,22 +403,23 @@
                 gap: 5px;
             }
             .btn-3d-fire {
-                width: 48px;
-                height: 140px;
+                width: 58px;
+                height: 130px;
+                flex: 0 0 58px;
                 font-size: 0.95em;
             }
             .dpad-8way-grid {
-                height: 140px;
+                height: 130px;
                 gap: 3px;
                 padding: 4px;
             }
             .key-col-3 {
-                height: 140px;
+                width: 58px;
+                height: 130px;
+                flex: 0 0 58px;
                 gap: 4px;
             }
             .btn-3d-trio {
-                width: 40px;
-                height: 42px;
                 font-size: 1.05em;
             }
         }
@@ -457,10 +456,9 @@
     </style>
 </head>
 <body>
-    <!-- MINIMALISTIC HALLOWEEN SPLASH SCREEN -->
+    <!-- BINARY HALLOWEEN SPLASH SCREEN (PURE BLACK & PUMPKIN ORANGE) -->
     <div id="splash-screen">
         <div class="splash-content">
-            <img src="../assets/dev_logo.png" onerror="this.onerror=null;this.src='dev_logo.png'" alt="Developer Logo" class="dev-logo" width="170" height="142">
             <div class="progress-bar-wrap">
                 <div id="progress-bar-fill"></div>
             </div>
@@ -583,7 +581,7 @@
         window.addEventListener('click', ensureExpandedOnGesture, { passive: true });
 
         // Explicit cache buster to guarantee fresh asset loading across mobile/TMA webviews
-        const APP_BUILD_HASH = "v20261022_b10";
+        const APP_BUILD_HASH = "v20261022_b13";
         import(`../engine/main.js?v=${APP_BUILD_HASH}`).then(({ startNativeEngine }) => {
             return startNativeEngine(`../assets/`, APP_BUILD_HASH);
         }).catch(err => {

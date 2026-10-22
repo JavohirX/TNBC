@@ -51,7 +51,7 @@ globalThis.StringBuffer = window.StringBuffer;
 
 // 2. J2ME Canvas & LCDEUI Shims
 import { Graphics } from "./lcd/Graphics.js";
-import { Image } from "./lcd/Image.js?v=v20261022_b7";
+import { Image } from "./lcd/Image.js?v=v20261022_b11";
 import { RecordStore } from "./lcd/RecordStore.js";
 import { DataInputStream } from "./io/DataInputStream.js";
 import { AudioManager } from "./audio/AudioManager.js";
@@ -207,7 +207,7 @@ async function preloadAssets(basePath = "assets/", versionHash = "v20261022_orig
 }
 
 // 6. Game Bootstrapper
-export async function startNativeEngine(assetBase = "assets/", versionHash = "v20261022_b9") {
+export async function startNativeEngine(assetBase = "assets/", versionHash = "v20261022_b11") {
     console.log("=== Nightmare Before Christmas Pure Native Engine Booting ===");
     const t0 = performance.now();
 

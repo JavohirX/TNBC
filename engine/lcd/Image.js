@@ -4,7 +4,7 @@
  * Synchronous decoding via PNGDecoder.
  */
 import { Graphics } from "./Graphics.js";
-import { decodePNG } from "./PNGDecoder.js?v=v20261022_b7";
+import { decodePNG } from "./PNGDecoder.js?v=v20261022_b11";
 
 export class Image {
     static _preloadedImages = new Map();

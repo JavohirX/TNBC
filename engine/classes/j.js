@@ -42,6 +42,9 @@ export class j {
                 const mime = "audio/" + j.var_java_lang_String_arr_a[typeCode];
                 let loopCount = (n2 === 3 || n2 === 4 || n2 === 5) ? -1 : 1;
                 if (typeof AudioManager !== 'undefined') {
+                    if (AudioManager.isGameplayPlaying) {
+                        AudioManager.fadeAndStopGameplayMusic(0.25);
+                    }
                     AudioManager.playAudio(n2, byArray, mime, loopCount);
                 }
                 j.var_int_a = n2;
@@ -55,42 +58,55 @@ export class j {
             console.warn("Audio playback error:", n2, e);
         }
     }
+
+    static playGameplayTrack(stageTrackIndex) {
+        if ((GMIDlet.var_byte_a & 3) === 0) return;
+        try {
+            if (typeof AudioManager !== 'undefined') {
+                AudioManager.playGameplayTrack(stageTrackIndex);
+            }
+            j.var_int_a = 3 + (Math.abs(stageTrackIndex) % 3);
+        } catch (e) {
+            console.warn("Gameplay audio playback error:", stageTrackIndex, e);
+        }
+    }
+
     static _a_2(dataInputStream) {
-    j.var_java_lang_Object_arr_a = new Array(6).fill(null);
-    let objectArray = null;
-    let n2 = dataInputStream.readShort();
-    while (n2-- > 0) {
-    try {
-    let n3 = 0;
-    let by = dataInputStream.readByte();
-    switch (by) {
-    case 4: {
-    n3 = dataInputStream.readShort();
-    objectArray = new Int8Array(n3 + 1);
-    dataInputStream.readFully(objectArray);
-    break;
-    }
-    case 5: {
-    let sArray = new Int16Array(3);
-    let sArray2 = sArray;
-    sArray[0] = dataInputStream.readByte();
-    sArray2[1] = dataInputStream.readShort();
-    sArray2[2] = dataInputStream.readByte();
-    objectArray = sArray2;
-    break;
-    }
-    default: {
-    return;
-    }
-    }
-    n3 = dataInputStream.readShort();
-    while (n3-- > 0) {
-    j.var_java_lang_Object_arr_a[dataInputStream.readByte()] = objectArray;
-    }
-    dataInputStream.readShort();
-    }
-    catch (exception) {}
-    }
+        j.var_java_lang_Object_arr_a = new Array(6).fill(null);
+        let objectArray = null;
+        let n2 = dataInputStream.readShort();
+        while (n2-- > 0) {
+            try {
+                let n3 = 0;
+                let by = dataInputStream.readByte();
+                switch (by) {
+                    case 4: {
+                        n3 = dataInputStream.readShort();
+                        objectArray = new Int8Array(n3 + 1);
+                        dataInputStream.readFully(objectArray);
+                        break;
+                    }
+                    case 5: {
+                        let sArray = new Int16Array(3);
+                        let sArray2 = sArray;
+                        sArray[0] = dataInputStream.readByte();
+                        sArray2[1] = dataInputStream.readShort();
+                        sArray2[2] = dataInputStream.readByte();
+                        objectArray = sArray2;
+                        break;
+                    }
+                    default: {
+                        return;
+                    }
+                }
+                n3 = dataInputStream.readShort();
+                while (n3-- > 0) {
+                    j.var_java_lang_Object_arr_a[dataInputStream.readByte()] = objectArray;
+                }
+                dataInputStream.readShort();
+            }
+            catch (exception) {}
+        }
     }
     
     playerUpdate(player, string, object) {

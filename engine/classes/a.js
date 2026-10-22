@@ -936,7 +936,13 @@ export class a {
     let n3 = this.f_q % 5;
     block0: switch (a.var_int_c) {
     case -3: {
-    this.void_a(-2);
+    this.var_t_a.w();
+    this.var_t_a.l();
+    if (t.var_boolean_f && t.f_n > 1) {
+    this.void_a(12);
+    } else {
+    this.void_a(13);
+    }
     break;
     }
     case -2: {
@@ -1463,7 +1469,13 @@ export class a {
     ++this.f_m;
     if (this.f_m > 50) {
     if (a.var_int_c == -3) {
-    this.void_a(-2);
+    this.var_t_a.w();
+    this.var_t_a.l();
+    if (t.var_boolean_f && t.f_n > 1) {
+    this.void_a(12);
+    return;
+    }
+    this.void_a(13);
     return;
     }
     if (a.var_int_c == -2) {

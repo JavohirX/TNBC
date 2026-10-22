@@ -577,20 +577,17 @@ export class n {
     this.var_boolean_i = false;
     this.var_boolean_l = false;
     this.var_int_j = 75;
-    let random = new Random();
-    let n3 = Math.abs(random.nextInt()) % 3;
-    if (this.var_int_l == -1) {
-    this.var_int_l = n3;
-    } else {
-    if (n3 == this.var_int_l && ++n3 > 2) {
-    n3 = 0;
-    }
-    this.var_int_l = n3;
-    }
+    // Option A: Round-robin rotation across stages for tuned GBA themes
+    let stageTrack = (typeof n2 === 'number' && n2 >= 0) ? (n2 % 3) : 0;
+    this.var_int_l = stageTrack;
     if (t.var_int_i != 1) {
-    j.a(3 + n3);
+        if (typeof j.playGameplayTrack === 'function') {
+            j.playGameplayTrack(stageTrack);
+        } else {
+            j.a(3 + stageTrack);
+        }
     } else {
-    j.var_int_a = 3 + n3;
+        j.var_int_a = 3 + stageTrack;
     }
     if (n2 == 0 || n2 == 3 || n2 == 5 || n2 == 10 || n2 == 14 || n2 == 15 || n2 == 20 || n2 == 25 || n2 == 35 || n2 == 39 || n2 == 40 || n2 == 45) {
     this.var_int_c = n2;
