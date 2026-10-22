@@ -345,6 +345,32 @@
             box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
         }
 
+        .game-toast {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background: rgba(13, 14, 21, 0.95);
+            border: 1px solid #f59e0b;
+            color: #f59e0b;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.85);
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            white-space: nowrap;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .game-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
         .vol-slider {
             -webkit-appearance: none;
             appearance: none;
@@ -649,7 +675,8 @@
                 <div class="center-tools">
                     <button id="btn-mute" class="ctrl-btn tool-btn" title="Toggle Sound (or press M)">🔊</button>
                     <input id="volume-slider" type="range" min="0" max="100" value="35" class="vol-slider" title="Music Volume" aria-label="Music Volume">
-                    <button id="btn-hd" class="ctrl-btn tool-btn active-hd" title="Toggle HD Textures">HD</button>
+                    <button id="btn-hd" class="ctrl-btn tool-btn active-hd" title="Toggle Texture Style / Demo">D1</button>
+                    <button id="btn-lvl" class="ctrl-btn tool-btn" title="Jump to Level 2 (Room 1)">L2</button>
                     <button id="btn-kbd-toggle" class="ctrl-btn tool-btn" title="Toggle Number Keypad">🔢</button>
                     <button id="btn-fullscreen" class="ctrl-btn tool-btn" title="Fullscreen">⛶</button>
                     <button id="btn-reset" class="ctrl-btn tool-btn" title="Restart Game">⟲</button>

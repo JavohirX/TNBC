@@ -158,6 +158,9 @@ const REQUIRED_ASSETS = [
     "lp__ru", "lp__de", "lp__fr", "lp__it", "lpok",
     "16x16TileSet.png", "32x32TileSet.png",
     "16x16TileSet_2x.png", "32x32TileSet_2x.png",
+    "16x16TileSet_demo1.png", "32x32TileSet_demo1.png",
+    "16x16TileSet_demo2.png", "32x32TileSet_demo2.png",
+    "16x16TileSet_demo3.png", "32x32TileSet_demo3.png",
     "levelSelect.png", "menuBottom.png",
     "splash.png", "mDisneyLogo.png", "softKeys.png",
     "replay0.rpl", "replay3.rpl", "replay5.rpl", "replay10.rpl",
@@ -601,34 +604,103 @@ function setupInputControls(tInstance, dirManager) {
     window.addEventListener("blur", releaseAllButtons);
 
     const btnHd = document.getElementById("btn-hd");
+    const MODES = [
+        { id: "demo1", label: "D1", name: "Demo 1: Sharp HD", desc: "Crisp integer 2x, authentic Burton gothic silhouette" },
+        { id: "demo2", label: "D2", name: "Demo 2: Vector Contour", desc: "Scale2x smart diagonal smoothing with face protection" },
+        { id: "demo3", label: "D3", name: "Demo 3: Burton Remaster", desc: "Gothic claymation, sunken eye sockets & ink outlines" },
+        { id: "1x",    label: "1X", name: "Native 1x Original", desc: "Unscaled 2005 Living Mobile pixel art" }
+    ];
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const demoQuery = urlParams.get("demo");
+    let currentModeIdx = 0;
+    if (demoQuery === "2") currentModeIdx = 1;
+    else if (demoQuery === "3") currentModeIdx = 2;
+    else if (demoQuery === "1x" || demoQuery === "sd") currentModeIdx = 3;
+    else currentModeIdx = 0; // Default to Demo 1
+
+    function showToast(text, duration = 1800) {
+        let toast = document.getElementById("game-toast");
+        if (!toast) {
+            toast = document.createElement("div");
+            toast.id = "game-toast";
+            toast.className = "game-toast";
+            const screenContainer = document.getElementById("screen-container") || document.body;
+            screenContainer.appendChild(toast);
+        }
+        toast.textContent = text;
+        toast.classList.add("show");
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(() => {
+            toast.classList.remove("show");
+        }, duration);
+    }
+
     function updateHdButton() {
         if (!btnHd) return;
-        if (Image.use2x) {
+        const mode = MODES[currentModeIdx];
+        btnHd.textContent = mode.label;
+        btnHd.title = `${mode.name} (Click to switch demo/style)`;
+        if (mode.id !== "1x") {
             btnHd.classList.add("active-hd");
             btnHd.style.color = "#f59e0b";
             btnHd.style.borderColor = "#f59e0b";
             btnHd.style.boxShadow = "0 0 10px rgba(245, 158, 11, 0.45)";
-            btnHd.title = "HD Textures (Scale2x) ACTIVE - Click to switch to SD";
         } else {
             btnHd.classList.remove("active-hd");
             btnHd.style.color = "#64748b";
             btnHd.style.borderColor = "#33384e";
             btnHd.style.boxShadow = "none";
-            btnHd.title = "SD Textures (Native 1x) ACTIVE - Click to switch to HD";
         }
     }
 
-    if (btnHd) {
+    function applyTextureMode(modeIdx, announce = true) {
+        currentModeIdx = (modeIdx + MODES.length) % MODES.length;
+        const mode = MODES[currentModeIdx];
+        if (mode.id === "1x") {
+            Image.activeDemo = null;
+            Image.use2x = false;
+        } else {
+            Image.activeDemo = mode.id;
+            Image.use2x = true;
+        }
+
+        const t = GMIDlet.var_t_a;
+        if (t) {
+            t.var_javax_microedition_lcdui_Image_a = Image.createImage("/16x16TileSet.png");
+            t.var_javax_microedition_lcdui_Image_b = Image.createImage("/32x32TileSet.png");
+        }
+
         updateHdButton();
+        if (announce) {
+            showToast(`🎨 ${mode.name}`);
+        }
+        console.log(`[Texture Switcher] Active Mode: ${mode.name} (${mode.desc})`);
+    }
+
+    if (btnHd) {
+        applyTextureMode(currentModeIdx, false);
         btnHd.addEventListener("click", () => {
-            Image.use2x = !Image.use2x;
+            applyTextureMode(currentModeIdx + 1, true);
+        });
+    }
+
+    const btnLvl = document.getElementById("btn-lvl");
+    let currentLvl = 1;
+    if (btnLvl) {
+        btnLvl.addEventListener("click", () => {
             const t = GMIDlet.var_t_a;
-            if (t) {
-                t.var_javax_microedition_lcdui_Image_a = Image.createImage("/16x16TileSet.png");
-                t.var_javax_microedition_lcdui_Image_b = Image.createImage("/32x32TileSet.png");
+            if (t && t.var_n_a) {
+                currentLvl = currentLvl === 1 ? 2 : 1;
+                const roomIdx = currentLvl - 1;
+                t.var_n_a.c();
+                t.var_n_a.c(roomIdx);
+                t.m();
+                t.g();
+                btnLvl.textContent = `L${currentLvl === 1 ? 2 : 1}`;
+                btnLvl.title = `Switch to Level ${currentLvl === 1 ? 2 : 1}`;
+                showToast(`🚀 Jumped to Level ${currentLvl} (Room ${roomIdx})`);
             }
-            updateHdButton();
-            console.log("Texture mode switched to:", Image.use2x ? "2x (HD)" : "1x (SD)");
         });
     }
 
