@@ -1,7 +1,7 @@
 /**
  * PNGDecoder.js
  * Synchronous pure JavaScript PNG decoder for J2ME runtime.
- * Decodes PNG byte arrays synchronously into Canvas / ImageData.
+ * Supports bitDepth 1, 2, 4, 8 for Indexed (type 3), RGB (type 2), and RGBA (type 6).
  */
 import { inflate } from "./pako.js";
 
@@ -17,10 +17,11 @@ function paeth(a, b, c) {
 
 export function decodePNG(bytes, offset = 0, length = null) {
     const len = length !== null ? length : bytes.length - offset;
-    const view = new DataView(bytes.buffer, bytes.byteOffset + offset, len);
+    const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes.buffer, bytes.byteOffset || 0, bytes.byteLength || bytes.length);
+    const view = new DataView(u8.buffer, u8.byteOffset + offset, len);
     
-    let pos = 8; // skip 8-byte signature
-    let width = 0, height = 0, bitDepth = 0, colorType = 0;
+    let pos = 8; // skip 8-byte PNG signature
+    let width = 0, height = 0, bitDepth = 8, colorType = 3;
     let palette = null;
     let trns = null;
     const idatChunks = [];
@@ -33,7 +34,7 @@ export function decodePNG(bytes, offset = 0, length = null) {
             view.getUint8(pos + 6),
             view.getUint8(pos + 7)
         );
-        const dataPos = bytes.byteOffset + offset + pos + 8;
+        const dataOffset = offset + pos + 8;
 
         if (type === 'IHDR') {
             width = view.getUint32(pos + 8, false);
@@ -41,11 +42,11 @@ export function decodePNG(bytes, offset = 0, length = null) {
             bitDepth = view.getUint8(pos + 16);
             colorType = view.getUint8(pos + 17);
         } else if (type === 'PLTE') {
-            palette = new Uint8Array(bytes.buffer, dataPos, chunkLen);
+            palette = u8.subarray(dataOffset, dataOffset + chunkLen);
         } else if (type === 'tRNS') {
-            trns = new Uint8Array(bytes.buffer, dataPos, chunkLen);
+            trns = u8.subarray(dataOffset, dataOffset + chunkLen);
         } else if (type === 'IDAT') {
-            idatChunks.push(new Uint8Array(bytes.buffer, dataPos, chunkLen));
+            idatChunks.push(u8.subarray(dataOffset, dataOffset + chunkLen));
         } else if (type === 'IEND') {
             break;
         }
@@ -65,8 +66,9 @@ export function decodePNG(bytes, offset = 0, length = null) {
     }
 
     const raw = inflate(combined);
-    const bpp = colorType === 6 ? 4 : (colorType === 2 ? 3 : 1);
-    const stride = width * bpp;
+    const channels = colorType === 6 ? 4 : (colorType === 2 ? 3 : 1);
+    const bpp = Math.max(1, Math.ceil((channels * bitDepth) / 8));
+    const stride = Math.ceil((width * channels * bitDepth) / 8);
     const out = new Uint8Array(width * height * 4);
     const scanlines = new Uint8Array(height * stride);
 
@@ -96,13 +98,27 @@ export function decodePNG(bytes, offset = 0, length = null) {
         for (let x = 0; x < width; x++) {
             const outIdx = pixelIdx * 4;
             if (colorType === 3) { // Indexed
-                const palIdx = scanlines[lineOff + x];
-                if (palette) {
-                    out[outIdx] = palette[palIdx * 3];
-                    out[outIdx + 1] = palette[palIdx * 3 + 1];
-                    out[outIdx + 2] = palette[palIdx * 3 + 2];
+                let palIdx = 0;
+                if (bitDepth === 8) {
+                    palIdx = scanlines[lineOff + x];
+                } else if (bitDepth === 4) {
+                    const byteVal = scanlines[lineOff + (x >> 1)];
+                    palIdx = (x & 1) === 0 ? ((byteVal >> 4) & 0x0F) : (byteVal & 0x0F);
+                } else if (bitDepth === 2) {
+                    const byteVal = scanlines[lineOff + (x >> 2)];
+                    palIdx = (byteVal >> (6 - (x & 3) * 2)) & 0x03;
+                } else if (bitDepth === 1) {
+                    const byteVal = scanlines[lineOff + (x >> 3)];
+                    palIdx = (byteVal >> (7 - (x & 7))) & 0x01;
                 }
-                out[outIdx + 3] = trns && trns[palIdx] !== undefined ? trns[palIdx] : 255;
+
+                if (palette) {
+                    const pOff = palIdx * 3;
+                    out[outIdx] = palette[pOff];
+                    out[outIdx + 1] = palette[pOff + 1];
+                    out[outIdx + 2] = palette[pOff + 2];
+                }
+                out[outIdx + 3] = trns && palIdx < trns.length && trns[palIdx] !== undefined ? trns[palIdx] : 255;
             } else if (colorType === 6) { // RGBA
                 const idx = lineOff + x * 4;
                 out[outIdx] = scanlines[idx];

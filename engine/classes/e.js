@@ -43,9 +43,9 @@ export class e {
     by = 0;
     }
     if (!t.var_java_lang_String_arr_a || !t.var_java_lang_String_arr_a.length) {
-    t.var_java_lang_String_arr_a = ["ru", "de", "fr", "it"];
+    t.var_java_lang_String_arr_a = ["en", "ru"];
     }
-    let lang = t.var_java_lang_String_arr_a[by] || "ru";
+    let lang = t.var_java_lang_String_arr_a[by] || "en";
     if ((string2 = lang.toLowerCase()).equals("el")) {
     string = "/font__el";
     e.var_int_b = 913;

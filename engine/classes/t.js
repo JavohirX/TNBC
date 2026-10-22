@@ -698,12 +698,12 @@ export class t extends FullCanvas {
     t.var_byte_a = n2;
     }
     if (!t.var_java_lang_String_arr_a || !t.var_java_lang_String_arr_a.length) {
-    t.var_java_lang_String_arr_a = ["ru", "de", "fr", "it"];
+    t.var_java_lang_String_arr_a = ["en", "ru"];
     }
     if (n2 >= t.var_java_lang_String_arr_a.length) {
     n2 = 0;
     }
-    let lang = t.var_java_lang_String_arr_a[n2] || "ru";
+    let lang = t.var_java_lang_String_arr_a[n2] || "en";
     let string = "/text__" + lang + ".txt";
     t.var_java_lang_String_b = null;
     t.var_java_lang_String_c = null;
@@ -750,9 +750,9 @@ export class t extends FullCanvas {
     by = 0;
     }
     if (!t.var_java_lang_String_arr_a || !t.var_java_lang_String_arr_a.length) {
-    t.var_java_lang_String_arr_a = ["ru", "de", "fr", "it"];
+    t.var_java_lang_String_arr_a = ["en", "ru"];
     }
-    let lang = t.var_java_lang_String_arr_a[by] || "ru";
+    let lang = t.var_java_lang_String_arr_a[by] || "en";
     let string = "/sp__" + lang;
     let dataInputStream = ResourceManager.getResourceAsStream(string);
     let s2 = dataInputStream.readShort();

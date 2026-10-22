@@ -51,7 +51,7 @@ globalThis.StringBuffer = window.StringBuffer;
 
 // 2. J2ME Canvas & LCDEUI Shims
 import { Graphics } from "./lcd/Graphics.js";
-import { Image } from "./lcd/Image.js";
+import { Image } from "./lcd/Image.js?v=v20261022_b7";
 import { RecordStore } from "./lcd/RecordStore.js";
 import { DataInputStream } from "./io/DataInputStream.js";
 import { AudioManager } from "./audio/AudioManager.js";
@@ -141,9 +141,10 @@ const CLASS_NAMES = [
     "k", "l", "d", "p", "c", "o", "h", "f", "g", "s", "j", "e", "r", "i", "b", "m", "q", "n", "a", "t", "GMIDlet"
 ];
 
-async function loadGameClasses() {
+async function loadGameClasses(versionHash = "") {
+    const vParam = versionHash ? `?v=${versionHash}` : "";
     for (const c of CLASS_NAMES) {
-        const mod = await import(`./classes/${c}.js`);
+        const mod = await import(`./classes/${c}.js${vParam}`);
         window[c] = mod[c];
     }
     console.log("All 21 classes loaded into browser window scope!");
@@ -153,9 +154,9 @@ async function loadGameClasses() {
 const REQUIRED_ASSETS = [
     "levels.mar", "levels.dat", "font", "font__ru", "lang", "m",
     "text.dat", "text.png", "textLarge.png",
-    "text__ru.txt", "text__de.txt", "text__fr.txt", "text__it.txt",
-    "sp__ru", "sp__de", "sp__fr", "sp__it",
-    "lp__ru", "lp__de", "lp__fr", "lp__it", "lpok",
+    "text__en.txt", "text__ru.txt", "text__de.txt", "text__fr.txt", "text__it.txt",
+    "sp__en", "sp__ru", "sp__de", "sp__fr", "sp__it",
+    "lp__en", "lp__ru", "lp__de", "lp__fr", "lp__it", "lpok",
     "16x16TileSet.png", "32x32TileSet.png",
     "levelSelect.png", "menuBottom.png",
     "splash.png", "mDisneyLogo.png", "softKeys.png",
@@ -200,17 +201,18 @@ async function preloadAssets(basePath = "assets/", versionHash = "v20261022_orig
     });
 
     await Promise.all(promises);
+    if (fill) fill.style.width = "100%";
     if (txt) txt.textContent = "Booting Pure Native Engine...";
     if (timerTxt) timerTxt.textContent = "Ready (0.0s)";
 }
 
 // 6. Game Bootstrapper
-export async function startNativeEngine(assetBase = "assets/", versionHash = "v20261022_b5") {
+export async function startNativeEngine(assetBase = "assets/", versionHash = "v20261022_b9") {
     console.log("=== Nightmare Before Christmas Pure Native Engine Booting ===");
     const t0 = performance.now();
 
     await preloadAssets(assetBase, versionHash);
-    await loadGameClasses();
+    await loadGameClasses(versionHash);
 
     // Instantiate MIDlet
     const midlet = new GMIDlet();
@@ -472,16 +474,12 @@ function setupInputControls(tInstance, dirManager) {
 
     // Toolbar Buttons & Sound Controls
     const btnMute = document.getElementById("btn-mute");
-    const volSlider = document.getElementById("volume-slider");
 
     function updateMuteButtonUI(muted) {
         if (btnMute) {
             btnMute.textContent = muted ? "🔇" : "🔊";
             btnMute.classList.toggle("muted", muted);
             btnMute.title = muted ? "Unmute Sound (or press M)" : "Mute Sound (or press M)";
-        }
-        if (volSlider) {
-            volSlider.style.opacity = muted ? "0.35" : "1";
         }
     }
 
@@ -493,15 +491,34 @@ function setupInputControls(tInstance, dirManager) {
         });
     }
 
-    if (volSlider) {
-        volSlider.value = Math.round(AudioManager.volume * 100);
-        volSlider.addEventListener("input", (e) => {
-            const val = parseFloat(e.target.value) / 100;
-            AudioManager.setVolume(val);
-            if (AudioManager.muted && val > 0) {
-                AudioManager.setMuted(false);
+    const btnReset = document.getElementById("btn-reset");
+    if (btnReset) {
+        btnReset.addEventListener("click", () => {
+            location.reload();
+        });
+    }
+
+    const btnFullscreen = document.getElementById("btn-fullscreen");
+    if (btnFullscreen) {
+        btnFullscreen.addEventListener("click", () => {
+            if (window.Telegram?.WebApp) {
+                const tg = window.Telegram.WebApp;
+                if (typeof tg.requestFullscreen === 'function') {
+                    try {
+                        if (tg.isFullscreen) {
+                            if (typeof tg.exitFullscreen === 'function') tg.exitFullscreen();
+                        } else {
+                            tg.requestFullscreen();
+                        }
+                        return;
+                    } catch (_) {}
+                }
             }
-            updateMuteButtonUI(AudioManager.muted);
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
         });
     }
 
@@ -529,9 +546,152 @@ function setupInputControls(tInstance, dirManager) {
         }
     });
 
-    // 8-Way Tactile Controller Buttons
-    const buttons = document.querySelectorAll(".ctrl-btn");
-    buttons.forEach((btn) => {
+    // --- 1. D-PAD SLIDING FINGER CONTROLLER ---
+    // Allows seamless slide-to-move across all 8 directions and diagonals
+    const dpadGrid = document.getElementById("dpad-grid") || document.querySelector(".dpad-8way-grid");
+    if (dpadGrid) {
+        let currentDir = null;
+        let dpadPointerId = null;
+
+        const dirButtons = {
+            "up": dpadGrid.querySelector('[data-dir="up"]'),
+            "down": dpadGrid.querySelector('[data-dir="down"]'),
+            "left": dpadGrid.querySelector('[data-dir="left"]'),
+            "right": dpadGrid.querySelector('[data-dir="right"]'),
+            "up-left": dpadGrid.querySelector('[data-dir="up-left"]'),
+            "up-right": dpadGrid.querySelector('[data-dir="up-right"]'),
+            "down-left": dpadGrid.querySelector('[data-dir="down-left"]'),
+            "down-right": dpadGrid.querySelector('[data-dir="down-right"]')
+        };
+
+        const DIR_KEYS = {
+            "up": [-1],
+            "down": [-2],
+            "left": [-3],
+            "right": [-4],
+            "up-left": [-1, -3],
+            "up-right": [-1, -4],
+            "down-left": [-2, -3],
+            "down-right": [-2, -4]
+        };
+
+        function getDirectionAtPoint(clientX, clientY) {
+            // First check direct element under the finger
+            const el = document.elementFromPoint(clientX, clientY);
+            if (el) {
+                const btn = el.closest(".dpad-cell[data-dir]");
+                if (btn) return btn.getAttribute("data-dir");
+                if (el.closest(".dpad-center-hub")) return null;
+            }
+
+            // Fallback: 360-degree radial vector geometry from D-pad center
+            const rect = dpadGrid.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = clientX - cx;
+            const dy = clientY - cy;
+            const dist = Math.hypot(dx, dy);
+
+            // Neutral center dead-zone (approx radius of center hub)
+            const deadZone = rect.width * 0.16;
+            // Outer release boundary
+            const maxRadius = rect.width * 0.95;
+
+            if (dist < deadZone || dist > maxRadius) {
+                return null;
+            }
+
+            let deg = Math.atan2(dy, dx) * (180 / Math.PI);
+            if (deg < 0) deg += 360;
+
+            const sector = Math.floor(((deg + 22.5) % 360) / 45);
+            const SECTORS = [
+                "right",       // 0: [337.5°, 22.5°)
+                "down-right",  // 1: [22.5°, 67.5°)
+                "down",        // 2: [67.5°, 112.5°)
+                "down-left",   // 3: [112.5°, 157.5°)
+                "left",        // 4: [157.5°, 202.5°)
+                "up-left",     // 5: [202.5°, 247.5°)
+                "up",          // 6: [247.5°, 292.5°)
+                "up-right"     // 7: [292.5°, 337.5°)
+            ];
+            return SECTORS[sector] || null;
+        }
+
+        function setDpadDirection(newDir) {
+            if (newDir === currentDir) return;
+
+            // Release previous direction
+            if (currentDir) {
+                const oldBtn = dirButtons[currentDir];
+                if (oldBtn) oldBtn.classList.remove("active");
+                const oldKeys = DIR_KEYS[currentDir];
+                if (oldKeys) {
+                    oldKeys.forEach(k => dirManager.handleRelease(k));
+                }
+            }
+
+            currentDir = newDir;
+
+            // Press new direction
+            if (currentDir) {
+                const newBtn = dirButtons[currentDir];
+                if (newBtn) newBtn.classList.add("active");
+                const newKeys = DIR_KEYS[currentDir];
+                if (newKeys) {
+                    newKeys.forEach(k => dirManager.handlePress(k));
+                }
+                if (navigator.vibrate) navigator.vibrate(8);
+                if (window.Telegram?.WebApp?.HapticFeedback) {
+                    try { window.Telegram.WebApp.HapticFeedback.impactOccurred("light"); } catch (_) {}
+                }
+                AudioManager.playClick();
+            }
+        }
+
+        function releaseDpad() {
+            if (currentDir) {
+                const oldBtn = dirButtons[currentDir];
+                if (oldBtn) oldBtn.classList.remove("active");
+                const oldKeys = DIR_KEYS[currentDir];
+                if (oldKeys) {
+                    oldKeys.forEach(k => dirManager.handleRelease(k));
+                }
+                currentDir = null;
+            }
+            dirManager.releaseAll();
+        }
+
+        dpadGrid.addEventListener("pointerdown", (e) => {
+            e.preventDefault();
+            dpadPointerId = e.pointerId;
+            try { dpadGrid.setPointerCapture(e.pointerId); } catch (_) {}
+            const dir = getDirectionAtPoint(e.clientX, e.clientY);
+            setDpadDirection(dir);
+        });
+
+        dpadGrid.addEventListener("pointermove", (e) => {
+            if (dpadPointerId === null || e.pointerId !== dpadPointerId) return;
+            e.preventDefault();
+            const dir = getDirectionAtPoint(e.clientX, e.clientY);
+            setDpadDirection(dir);
+        });
+
+        const onPointerEnd = (e) => {
+            if (dpadPointerId === null || e.pointerId !== dpadPointerId) return;
+            e.preventDefault();
+            try { dpadGrid.releasePointerCapture(e.pointerId); } catch (_) {}
+            dpadPointerId = null;
+            releaseDpad();
+        };
+
+        dpadGrid.addEventListener("pointerup", onPointerEnd);
+        dpadGrid.addEventListener("pointercancel", onPointerEnd);
+    }
+
+    // --- 2. INDEPENDENT ACTION & UTILITY BUTTONS (OK, *, 0, #, LSK, RSK) ---
+    const actionButtons = document.querySelectorAll(".ctrl-btn:not(.dpad-cell)");
+    actionButtons.forEach((btn) => {
         const keyData = btn.getAttribute("data-key");
         if (!keyData) return;
 
@@ -569,9 +729,9 @@ function setupInputControls(tInstance, dirManager) {
         btn.addEventListener("pointercancel", handleRelease);
     });
 
-    // Global fail-safe release for touches/clicks moving outside element bounds
-    const releaseAllButtons = () => {
-        buttons.forEach((btn) => {
+    // Global fail-safe release for non-D-Pad buttons
+    const releaseAllActionButtons = () => {
+        actionButtons.forEach((btn) => {
             if (btn.classList.contains("active")) {
                 btn.classList.remove("active");
                 const keyData = btn.getAttribute("data-key");
@@ -583,95 +743,20 @@ function setupInputControls(tInstance, dirManager) {
                 }
             }
         });
-        dirManager.releaseAll();
     };
 
     const handleGlobalRelease = (e) => {
-        // If there are still active touches on the screen, don't kill other buttons!
         if (e.touches && e.touches.length > 0) return;
-        // If this pointer was captured or released directly on a button, that button handles it
         if (e.target && e.target.classList && e.target.classList.contains("ctrl-btn")) return;
-        releaseAllButtons();
+        releaseAllActionButtons();
     };
 
     window.addEventListener("pointerup", handleGlobalRelease);
     window.addEventListener("pointercancel", handleGlobalRelease);
-    window.addEventListener("blur", releaseAllButtons);
-
-    function showToast(text, duration = 1800) {
-        let toast = document.getElementById("game-toast");
-        if (!toast) {
-            toast = document.createElement("div");
-            toast.id = "game-toast";
-            toast.className = "game-toast";
-            const screenContainer = document.getElementById("screen-container") || document.body;
-            screenContainer.appendChild(toast);
-        }
-        toast.textContent = text;
-        toast.classList.add("show");
-        clearTimeout(toast._timer);
-        toast._timer = setTimeout(() => {
-            toast.classList.remove("show");
-        }, duration);
-    }
-
-    const btnLvl = document.getElementById("btn-lvl");
-    let currentLvl = 1;
-    if (btnLvl) {
-        btnLvl.addEventListener("click", () => {
-            const t = GMIDlet.var_t_a;
-            if (t && t.var_n_a) {
-                currentLvl = currentLvl === 1 ? 2 : 1;
-                const roomIdx = currentLvl - 1;
-                t.var_n_a.c();
-                t.var_n_a.c(roomIdx);
-                t.m();
-                t.g();
-                btnLvl.textContent = `L${currentLvl === 1 ? 2 : 1}`;
-                btnLvl.title = `Switch to Level ${currentLvl === 1 ? 2 : 1}`;
-                showToast(`🚀 Jumped to Level ${currentLvl} (Room ${roomIdx})`);
-            }
-        });
-    }
-
-    const btnKbd = document.getElementById("btn-kbd-toggle");
-    const numKeypad = document.getElementById("num-keypad");
-    if (btnKbd && numKeypad) {
-        btnKbd.addEventListener("click", () => {
-            numKeypad.classList.toggle("hidden");
-        });
-    }
-
-    const btnFullscreen = document.getElementById("btn-fullscreen");
-    if (btnFullscreen) {
-        btnFullscreen.addEventListener("click", () => {
-            if (window.Telegram?.WebApp) {
-                const tg = window.Telegram.WebApp;
-                if (typeof tg.requestFullscreen === 'function') {
-                    try {
-                        if (tg.isFullscreen) {
-                            if (typeof tg.exitFullscreen === 'function') tg.exitFullscreen();
-                        } else {
-                            tg.requestFullscreen();
-                        }
-                        return;
-                    } catch (_) {}
-                }
-            }
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => {});
-            } else {
-                document.exitFullscreen().catch(() => {});
-            }
-        });
-    }
-
-    const btnReset = document.getElementById("btn-reset");
-    if (btnReset) {
-        btnReset.addEventListener("click", () => {
-            location.reload();
-        });
-    }
+    window.addEventListener("blur", () => {
+        releaseAllActionButtons();
+        dirManager.releaseAll();
+    });
 }
 
 function triggerButtonActive(code, isActive) {

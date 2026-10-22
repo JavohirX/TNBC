@@ -15,6 +15,8 @@ scratch/*.jpg
 scratch/*.bmp
 scratch/
 *.log
-
-
+tools/
+TNBC-GBA/
+TNBC-larger-screen/
+*.gba
 

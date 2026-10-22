@@ -935,6 +935,20 @@ export class a {
     block132: {
     let n3 = this.f_q % 5;
     block0: switch (a.var_int_c) {
+    case -3: {
+    this.void_a(-2);
+    break;
+    }
+    case -2: {
+    this.var_t_a.w();
+    this.var_t_a.l();
+    if (t.var_boolean_f && t.f_n > 1) {
+    this.void_a(12);
+    } else {
+    this.void_a(13);
+    }
+    break;
+    }
     case 12: {
     switch (n2) {
     case 1: {

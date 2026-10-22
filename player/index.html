@@ -87,7 +87,7 @@
             outline: none;
         }
 
-        /* --- IMMERSIVE FULL-SCREEN LAUNCH OVERLAY --- */
+        /* --- MINIMALISTIC HALLOWEEN SPLASH SCREEN --- */
         #splash-screen {
             position: fixed;
             inset: 0;
@@ -95,13 +95,9 @@
             height: 100vh;
             height: 100dvh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: radial-gradient(circle at center, #1b162f 0%, #08090d 100%);
-            color: #d8b4fe;
-            text-align: center;
-            padding: 24px;
+            background-color: #08090d;
             z-index: 99999;
             transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
         }
@@ -112,85 +108,42 @@
             pointer-events: none;
         }
 
-        .splash-card {
+        .splash-content {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            max-width: 320px;
-            width: 100%;
         }
 
-        .title-badge {
-            font-size: 1.22em;
-            font-weight: 800;
-            letter-spacing: 1.2px;
-            text-transform: uppercase;
-            color: #f59e0b;
-            margin-bottom: 6px;
-            text-shadow: 0 0 12px rgba(245, 158, 11, 0.55);
-        }
-
-        .subtitle-badge {
-            font-size: 0.85em;
-            color: #a78bfa;
-            margin-bottom: 22px;
-            letter-spacing: 0.5px;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3.5px solid rgba(167, 139, 250, 0.2);
-            border-top-color: #f59e0b;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-bottom: 14px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        #loading-text {
-            font-size: 0.9em;
-            color: #cbd5e1;
-            font-weight: 500;
+        .dev-logo {
+            width: 140px;
+            max-width: 50vw;
+            height: auto;
+            display: block;
+            image-rendering: -webkit-optimize-contrast;
+            filter: drop-shadow(0 0 16px rgba(249, 115, 22, 0.45));
+            user-select: none;
+            -webkit-user-select: none;
+            pointer-events: none;
         }
 
         .progress-bar-wrap {
-            width: 86%;
-            max-width: 250px;
-            height: 6px;
+            width: 140px;
+            max-width: 50vw;
+            height: 4px;
             background: rgba(255, 255, 255, 0.12);
-            border-radius: 3px;
-            margin: 14px 0 6px 0;
+            border-radius: 2px;
+            margin-top: 28px;
             overflow: hidden;
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         #progress-bar-fill {
-            width: 5%;
+            width: 0%;
             height: 100%;
-            background: linear-gradient(90deg, #f59e0b 0%, #ef4444 50%, #8b5cf6 100%);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-            box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
-        }
-
-        #loading-timer {
-            font-size: 0.76em;
-            color: #fbbf24;
-            font-family: monospace;
-            margin-top: 4px;
-        }
-
-        #loading-subtext {
-            font-size: 0.74em;
-            color: #94a3b8;
-            margin-top: 10px;
-            max-width: 290px;
-            line-height: 1.4;
+            background: #f97316;
+            border-radius: 2px;
+            transition: width 0.15s ease-out;
+            box-shadow: 0 0 8px rgba(249, 115, 22, 0.8);
         }
 
         /* --- 3D TACTILE RETRO CONTROLS PANEL --- */
@@ -336,15 +289,6 @@
             border-color: #ef4444;
         }
 
-        .tool-btn.active-hd {
-            color: #f59e0b;
-            border-color: #f59e0b;
-            font-weight: 800;
-            font-size: 0.7rem;
-            letter-spacing: 0.5px;
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
-        }
-
         .game-toast {
             position: absolute;
             top: 12px;
@@ -371,41 +315,6 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        .vol-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 44px;
-            height: 6px;
-            border-radius: 3px;
-            background: #1e2232;
-            border: 1px solid #33384e;
-            outline: none;
-            cursor: pointer;
-            margin: 0 2px;
-            transition: opacity 0.2s ease;
-        }
-
-        .vol-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 13px;
-            height: 13px;
-            border-radius: 50%;
-            background: #f59e0b;
-            border: 1px solid #fff;
-            cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.6);
-        }
-
-        .vol-slider::-moz-range-thumb {
-            width: 13px;
-            height: 13px;
-            border-radius: 50%;
-            background: #f59e0b;
-            border: 1px solid #fff;
-            cursor: pointer;
-        }
-
         /* --- MAIN PAD AREA (8-WAY D-PAD + ACTION CLUSTER) --- */
         .main-pad-row {
             display: flex;
@@ -416,7 +325,7 @@
             padding: 2px 4px;
         }
 
-        /* 3x3 8-WAY D-PAD WITH DIAGONALS & CENTER OK */
+        /* 3x3 8-WAY D-PAD WITH DIAGONALS & PIVOT HUB */
         .dpad-8way-grid {
             width: 154px;
             height: 154px;
@@ -431,6 +340,7 @@
             box-shadow: 
                 0 6px 18px rgba(0, 0, 0, 0.75),
                 inset 0 2px 6px rgba(0, 0, 0, 0.7);
+            touch-action: none;
         }
 
         .dpad-cell {
@@ -438,6 +348,7 @@
             height: 100%;
             border-radius: 6px;
             font-weight: 800;
+            touch-action: none;
         }
 
         /* Cardinal Direction Arrows (▲, ▼, ◄, ►) */
@@ -459,31 +370,15 @@
             background: linear-gradient(180deg, #1f2333 0%, #131520 100%);
         }
 
-        /* Center OK Button */
-        .dpad-center-ok {
-            background: linear-gradient(180deg, #443c2c 0%, #2e281b 50%, #1f1b12 100%);
-            color: #fbbf24;
-            font-size: 0.88em;
+        /* D-Pad Center Pivot Hub (neutral dead-zone) */
+        .dpad-center-hub {
+            background: radial-gradient(circle at center, #1c1f2e 0%, #11131e 100%);
             border-radius: 6px;
-            border-top: 1px solid rgba(251, 191, 36, 0.35);
-            box-shadow: 
-                0 4px 0 #120f09,
-                0 5px 8px rgba(0, 0, 0, 0.6),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.75);
+            pointer-events: none;
         }
 
-        .dpad-center-ok:active, .dpad-center-ok.active {
-            transform: translateY(3px);
-            box-shadow: 
-                0 1px 0 #120f09,
-                0 2px 4px rgba(0, 0, 0, 0.8),
-                inset 0 2px 4px rgba(0, 0, 0, 0.6),
-                0 0 12px rgba(251, 191, 36, 0.5);
-            background: linear-gradient(180deg, #b45309 0%, #78350f 100%);
-            color: #fff;
-        }
-
-        /* --- RIGHT ACTION AREA (FIRE + *, 0, # CLUSTER) --- */
+        /* --- RIGHT ACTION AREA (OK + *, 0, # CLUSTER) --- */
         .action-cluster {
             display: flex;
             flex-direction: column;
@@ -493,39 +388,34 @@
             padding-right: 2px;
         }
 
-        /* Big 3D FIRE / WHIP Button */
+        /* 3D Action / OK Button - Matches dark slate keycap aesthetic */
         .btn-3d-fire {
             width: 72px;
             height: 72px;
             border-radius: 50%;
-            background: linear-gradient(180deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
-            color: #fff;
-            font-size: 0.95em;
+            background: linear-gradient(180deg, #373c52 0%, #242838 52%, #191c28 100%);
+            color: #f1f5f9;
+            font-size: 1.2em;
             font-weight: 800;
-            letter-spacing: 0.5px;
-            border-top: 1px solid rgba(255, 255, 255, 0.45);
+            letter-spacing: 0.8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(0, 0, 0, 0.4);
             box-shadow: 
-                0 5px 0 #7c2d12,
-                0 8px 16px rgba(234, 88, 12, 0.45),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+                0 4px 0 #090a10,
+                0 6px 12px rgba(0, 0, 0, 0.65),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .btn-3d-fire:active, .btn-3d-fire.active {
-            transform: translateY(4px);
+            transform: translateY(3px);
             box-shadow: 
-                0 1px 0 #7c2d12,
+                0 1px 0 #090a10,
                 0 2px 4px rgba(0, 0, 0, 0.8),
-                inset 0 2px 6px rgba(0, 0, 0, 0.6),
-                0 0 18px rgba(249, 115, 22, 0.7);
-            background: linear-gradient(180deg, #c2410c 0%, #9a3412 100%);
-        }
-
-        .btn-label-sub {
-            font-size: 0.62em;
-            font-weight: 600;
-            opacity: 0.9;
-            margin-top: 1px;
-            letter-spacing: 0.5px;
+                inset 0 2px 5px rgba(0, 0, 0, 0.6),
+                0 0 12px rgba(56, 189, 248, 0.45);
+            background: linear-gradient(180deg, #222636 0%, #161824 100%);
+            color: #38bdf8;
         }
 
         /* 3-Key Horizontal Row for *, 0, # */
@@ -541,53 +431,6 @@
             border-radius: 9px;
             font-size: 1.15em;
             font-weight: 800;
-        }
-
-        .btn-3d-trio .sub-txt {
-            font-size: 0.52em;
-            font-weight: 600;
-            color: #94a3b8;
-            margin-top: 0;
-            line-height: 1;
-            letter-spacing: 0.5px;
-        }
-
-        /* --- COLLAPSIBLE NUMERIC KEYPAD DRAWER --- */
-        #num-keypad {
-            position: absolute;
-            left: 12px;
-            right: 12px;
-            bottom: 6px;
-            background: #141724;
-            border: 2px solid #373b4e;
-            border-radius: 12px;
-            padding: 10px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            box-shadow: 0 -8px 24px rgba(0,0,0,0.8);
-            z-index: 20;
-            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
-        }
-
-        #num-keypad.hidden {
-            transform: translateY(110%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .num-btn {
-            height: 42px;
-            font-size: 1.15em;
-            border-radius: 8px;
-            background: #232737;
-            border-color: #383e54;
-        }
-
-        .num-btn span {
-            font-size: 0.5em;
-            color: #94a3b8;
-            margin-left: 4px;
         }
 
         /* Small screens */
@@ -641,18 +484,13 @@
     </style>
 </head>
 <body>
-    <!-- IMMERSIVE FULL-SCREEN BOOT VEIL (FIXED OVERLAY) -->
+    <!-- MINIMALISTIC HALLOWEEN SPLASH SCREEN -->
     <div id="splash-screen">
-        <div class="splash-card">
-            <div class="title-badge">Nightmare Before Christmas</div>
-            <div class="subtitle-badge">Living Mobile &bull; J2ME 240&times;320</div>
-            <div class="spinner"></div>
-            <div id="loading-text">Initializing Audio & Engine...</div>
+        <div class="splash-content">
+            <img src="../assets/dev_logo.png" onerror="this.onerror=null;this.src='dev_logo.png'" alt="Developer Logo" class="dev-logo" width="170" height="142">
             <div class="progress-bar-wrap">
                 <div id="progress-bar-fill"></div>
             </div>
-            <div id="loading-timer">Booting Pure Native Engine... (0.0s)</div>
-            <div id="loading-subtext">100% Pure Native JavaScript &bull; Instant Launch &bull; Authentic Living Mobile 2005 Engine</div>
         </div>
     </div>
 
@@ -674,10 +512,6 @@
                 </button>
                 <div class="center-tools">
                     <button id="btn-mute" class="ctrl-btn tool-btn" title="Toggle Sound (or press M)">🔊</button>
-                    <input id="volume-slider" type="range" min="0" max="100" value="35" class="vol-slider" title="Music Volume" aria-label="Music Volume">
-                    <button id="btn-lvl" class="ctrl-btn tool-btn" title="Jump to Level 2 (Room 1)">L2</button>
-                    <button id="btn-kbd-toggle" class="ctrl-btn tool-btn" title="Toggle Number Keypad">🔢</button>
-                    <button id="btn-fullscreen" class="ctrl-btn tool-btn" title="Fullscreen">⛶</button>
                     <button id="btn-reset" class="ctrl-btn tool-btn" title="Restart Game">⟲</button>
                 </div>
                 <button id="btn-rsk" class="ctrl-btn btn-3d btn-3d-soft" data-key="F2" aria-label="Right Soft Key">
@@ -686,66 +520,40 @@
                 </button>
             </div>
 
-            <!-- MAIN GAME CONTROLS: 8-WAY D-PAD (LEFT) + FIRE & *,0,# (RIGHT) -->
+            <!-- MAIN GAME CONTROLS: 8-WAY D-PAD (LEFT) + OK & *,0,# (RIGHT) -->
             <div class="main-pad-row">
-                <!-- 3x3 8-Way D-Pad with Diagonals & Center OK -->
-                <div class="dpad-8way-grid">
+                <!-- 3x3 8-Way D-Pad with Diagonals & Center Pivot Hub -->
+                <div class="dpad-8way-grid" id="dpad-grid">
                     <!-- Row 1: Up-Left, Up, Up-Right -->
-                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowUp,ArrowLeft" aria-label="Up-Left">↖</button>
-                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowUp" aria-label="Up">▲</button>
-                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowUp,ArrowRight" aria-label="Up-Right">↗</button>
+                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowUp,ArrowLeft" data-dir="up-left" aria-label="Up-Left">↖</button>
+                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowUp" data-dir="up" aria-label="Up">▲</button>
+                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowUp,ArrowRight" data-dir="up-right" aria-label="Up-Right">↗</button>
 
-                    <!-- Row 2: Left, Center OK, Right -->
-                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowLeft" aria-label="Left">◄</button>
-                    <button class="ctrl-btn btn-3d dpad-cell dpad-center-ok" data-key="Enter" aria-label="OK">OK</button>
-                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowRight" aria-label="Right">►</button>
+                    <!-- Row 2: Left, Center Pivot Hub, Right -->
+                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowLeft" data-dir="left" aria-label="Left">◄</button>
+                    <div class="dpad-cell dpad-center-hub" aria-hidden="true"></div>
+                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowRight" data-dir="right" aria-label="Right">►</button>
 
                     <!-- Row 3: Down-Left, Down, Down-Right -->
-                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowDown,ArrowLeft" aria-label="Down-Left">↙</button>
-                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowDown" aria-label="Down">▼</button>
-                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowDown,ArrowRight" aria-label="Down-Right">↘</button>
+                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowDown,ArrowLeft" data-dir="down-left" aria-label="Down-Left">↙</button>
+                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-cardinal" data-key="ArrowDown" data-dir="down" aria-label="Down">▼</button>
+                    <button class="ctrl-btn btn-3d btn-3d-dark dpad-cell dpad-diagonal" data-key="ArrowDown,ArrowRight" data-dir="down-right" aria-label="Down-Right">↘</button>
                 </div>
 
                 <!-- Right Thumb Action Area -->
                 <div class="action-cluster">
-                    <!-- Primary 3D Fire / Whip / Select Button -->
-                    <button class="ctrl-btn btn-3d btn-3d-fire" data-key="Enter" aria-label="Fire / Whip / OK">
-                        <span>FIRE</span>
-                        <span class="btn-label-sub">WHIP / 5</span>
+                    <!-- Primary 3D OK Button -->
+                    <button class="ctrl-btn btn-3d btn-3d-fire" data-key="Enter" aria-label="OK">
+                        <span>OK</span>
                     </button>
 
                     <!-- 3-Key Row: Star (*), Zero (0), Hash (#) -->
                     <div class="key-row-3">
-                        <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="NumpadAsterisk" aria-label="Star Key">
-                            <span>✱</span>
-                            <span class="sub-txt">ACT</span>
-                        </button>
-                        <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="Digit0" aria-label="Zero Key">
-                            <span>0</span>
-                            <span class="sub-txt">+</span>
-                        </button>
-                        <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="NumpadDivide" aria-label="Hash Key">
-                            <span>#</span>
-                            <span class="sub-txt">SPC</span>
-                        </button>
+                        <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="NumpadAsterisk" aria-label="Star Key">✱</button>
+                        <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="Digit0" aria-label="Zero Key">0</button>
+                        <button class="ctrl-btn btn-3d btn-3d-dark btn-3d-trio" data-key="NumpadDivide" aria-label="Hash Key">#</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- COLLAPSIBLE NUMERIC KEYPAD -->
-            <div id="num-keypad" class="hidden">
-                <button class="ctrl-btn num-btn" data-key="Digit1">1</button>
-                <button class="ctrl-btn num-btn" data-key="Digit2">2<span>ABC</span></button>
-                <button class="ctrl-btn num-btn" data-key="Digit3">3<span>DEF</span></button>
-                <button class="ctrl-btn num-btn" data-key="Digit4">4<span>GHI</span></button>
-                <button class="ctrl-btn num-btn" data-key="Digit5">5<span>JKL</span></button>
-                <button class="ctrl-btn num-btn" data-key="Digit6">6<span>MNO</span></button>
-                <button class="ctrl-btn num-btn" data-key="Digit7">7<span>PQRS</span></button>
-                <button class="ctrl-btn num-btn" data-key="Digit8">8<span>TUV</span></button>
-                <button class="ctrl-btn num-btn" data-key="Digit9">9<span>WXYZ</span></button>
-                <button class="ctrl-btn num-btn" data-key="NumpadAsterisk">*</button>
-                <button class="ctrl-btn num-btn" data-key="Digit0">0<span>+</span></button>
-                <button class="ctrl-btn num-btn" data-key="NumpadDivide">#</button>
             </div>
         </div>
     </div>
@@ -811,7 +619,7 @@
         window.addEventListener('click', ensureExpandedOnGesture, { passive: true });
 
         // Explicit cache buster to guarantee fresh asset loading across mobile/TMA webviews
-        const APP_BUILD_HASH = "v20261022_original";
+        const APP_BUILD_HASH = "v20261022_b9";
         import(`../engine/main.js?v=${APP_BUILD_HASH}`).then(({ startNativeEngine }) => {
             return startNativeEngine(`../assets/`, APP_BUILD_HASH);
         }).catch(err => {
