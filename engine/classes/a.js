@@ -278,7 +278,8 @@ export class a {
     if (this.var_t_a.var_short_arr_a[i2] > this.var_t_a.var_short_arr_c[i2]) continue;
     n2 += 500;
     }
-    let string = "" + (n2 /= 200) / 10 + "." + n2 % 10 + "% " + t.var_java_lang_String_arr_b[15];
+    n2 = Math.floor(n2 / 200);
+    let string = "" + Math.floor(n2 / 10) + "." + (n2 % 10) + "% " + t.var_java_lang_String_arr_b[15];
     return string;
     }
     
@@ -790,7 +791,7 @@ export class a {
     this.var_h_a.f_d = 2;
     if (this.f_l == 0) {
     this.var_h_a.f_c = 95;
-    this.var_int_i += this.var_t_a.var_int_e / 2;
+    this.var_int_i += Math.floor(this.var_t_a.var_int_e / 2);
     if (this.var_int_i >= t.var_int_a) {
     this.var_int_i = t.var_int_a + t.var_int_d * 4;
     this.f_l = 1;
@@ -807,7 +808,7 @@ export class a {
     this.var_n_a.a(this.var_h_a, 2);
     } else {
     this.var_h_a.f_c = 123;
-    this.var_int_i -= this.var_t_a.var_int_e / 2;
+    this.var_int_i -= Math.floor(this.var_t_a.var_int_e / 2);
     if (this.var_int_i <= 0 - t.var_int_d) {
     this.var_int_i = 0 - t.var_int_d * 4;
     this.f_l = 0;
@@ -850,7 +851,7 @@ export class a {
     if (!this.var_t_a.var_boolean_arr_a[n2]) {
     return 0;
     }
-    let n5 = (60000 + 5000 * (n2 / 5 + 1) - n3 * n4) / 10;
+    let n5 = Math.floor((60000 + 5000 * (Math.floor(n2 / 5) + 1) - n3 * n4) / 10);
     if (n5 < 0) {
     n5 = 0;
     }
