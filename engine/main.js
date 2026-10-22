@@ -292,7 +292,21 @@ const DIRECTION_KEYS = new Set([-1, -2, -3, -4, 50, 52, 54, 56]);
 class DirectionInputManager {
     constructor(tInstance) {
         this.t = tInstance;
-        this.states = new Map(); // j2meKey -> state
+        // Physical state: set of direction keys currently physically held by user
+        this.heldKeys = new Set();
+        // Chronological order of physical direction presses (last element = newest press)
+        this.heldOrder = [];
+        // The direction key currently asserted into the engine (t.keyPressed)
+        this.engineKey = null;
+    }
+
+    // Get the user's current physically requested direction (most recent held key)
+    getDesiredKey() {
+        for (let i = this.heldOrder.length - 1; i >= 0; i--) {
+            const key = this.heldOrder[i];
+            if (this.heldKeys.has(key)) return key;
+        }
+        return null;
     }
 
     handlePress(j2meKey) {
@@ -301,52 +315,131 @@ class DirectionInputManager {
             return;
         }
 
-        let state = this.states.get(j2meKey);
-        if (!state) {
-            state = {
-                pressTime: performance.now(),
-                stepInitiated: false,
-                repeatActive: false
-            };
-            this.states.set(j2meKey, state);
-            this.t.keyPressed(j2meKey);
+        this.heldKeys.add(j2meKey);
+        this.heldOrder = this.heldOrder.filter(k => k !== j2meKey);
+        this.heldOrder.push(j2meKey);
+
+        const jack = this.t?.var_n_a?.var_q_a;
+        const isMoving = jack ? (jack.f_e === 1 || jack.f_e === 4) : false;
+
+        // If Jack is NOT currently moving (sync lock is OPEN), start freshly right away!
+        if (!isMoving) {
+            this.applyEngineKey(j2meKey);
+        } else {
+            // Jack is currently busy completing a step in some direction.
+            // If the old direction in engine is no longer physically held, release it now
+            // so Jack will not auto-repeat the old direction when his current step finishes.
+            if (this.engineKey !== null && !this.heldKeys.has(this.engineKey)) {
+                this.t.keyReleased(this.engineKey);
+                this.engineKey = null;
+            }
+            // The new key is recorded in this.heldKeys / heldOrder.
+            // It will be actioned upon ONLY when the sync lock opens (in onGameTick),
+            // provided the user is STILL holding it at that moment.
         }
     }
 
     handleRelease(j2meKey) {
-        this.t.keyReleased(j2meKey);
-        this.states.delete(j2meKey);
+        if (!DIRECTION_KEYS.has(j2meKey)) {
+            this.t.keyReleased(j2meKey);
+            return;
+        }
+
+        this.heldKeys.delete(j2meKey);
+        this.heldOrder = this.heldOrder.filter(k => k !== j2meKey);
+
+        const desiredKey = this.getDesiredKey();
+
+        // Hardest rule: if user stopped touching any control button, even for a brief moment,
+        // current objective should be to stop.
+        if (desiredKey === null) {
+            const jack = this.t?.var_n_a?.var_q_a;
+            const isMoving = jack ? (jack.f_e === 1 || jack.f_e === 4) : false;
+
+            // If Jack is already in motion, release key immediately so he stops after this tile.
+            // If Jack has finished turning (f_v <= 0), release immediately.
+            // Otherwise, keep asserted until step initiates or turning finishes.
+            if (this.engineKey !== null) {
+                if (isMoving || (jack && jack.f_v <= 0)) {
+                    this.t.keyReleased(this.engineKey);
+                    this.engineKey = null;
+                }
+            }
+            return;
+        }
+
+        // Another direction key is still physically held
+        const jack = this.t?.var_n_a?.var_q_a;
+        const isMoving = jack ? (jack.f_e === 1 || jack.f_e === 4) : false;
+        if (!isMoving) {
+            this.applyEngineKey(desiredKey);
+        }
+    }
+
+    applyEngineKey(key) {
+        if (this.engineKey === key) return;
+
+        if (this.engineKey !== null) {
+            this.t.keyReleased(this.engineKey);
+        }
+        this.engineKey = key;
+        if (key !== null) {
+            this.t.keyPressed(key);
+        }
     }
 
     releaseAll() {
-        for (const key of this.states.keys()) {
-            this.t.keyReleased(key);
+        this.heldKeys.clear();
+        this.heldOrder = [];
+        if (this.engineKey !== null) {
+            this.t.keyReleased(this.engineKey);
+            this.engineKey = null;
         }
-        this.states.clear();
+        for (const k of DIRECTION_KEYS) {
+            this.t.keyReleased(k);
+        }
     }
 
     onGameTick() {
-        const now = performance.now();
         const jack = this.t?.var_n_a?.var_q_a;
-        const isMoving = jack && (jack.f_e === 1 || jack.f_e === 4);
+        if (!jack) return;
 
-        for (const [key, state] of this.states.entries()) {
-            const holdMs = now - state.pressTime;
+        const isMoving = (jack.f_e === 1 || jack.f_e === 4);
+        const desiredKey = this.getDesiredKey();
 
-            if (isMoving) {
-                state.stepInitiated = true;
-            }
-
-            // If user has held for less than the repeat threshold (400ms):
-            // Once the step is initiated, release the key in engine so Jack stops after exactly 1 tile!
-            if (holdMs < 400) {
-                if (state.stepInitiated) {
-                    this.t.keyReleased(key);
+        // 1. If user is touching NO direction buttons:
+        // Current objective is strictly to STOP.
+        if (desiredKey === null) {
+            if (this.engineKey !== null) {
+                if (isMoving || jack.f_v <= 0) {
+                    this.t.keyReleased(this.engineKey);
+                    this.engineKey = null;
                 }
+            }
+            return;
+        }
+
+        // 2. User IS holding a direction button (desiredKey !== null):
+        if (isMoving) {
+            // Jack is currently in mid-stride (sync lock is CLOSED).
+            // If the key currently active in the engine is NOT what the user wants,
+            // release it so the previous direction doesn't repeat after this tile.
+            if (this.engineKey !== null && this.engineKey !== desiredKey) {
+                this.t.keyReleased(this.engineKey);
+                this.engineKey = null;
+            }
+            return;
+        }
+
+        // 3. Jack is NOT moving (sync lock is OPEN! jack.f_e !== 1 && jack.f_e !== 4):
+        // Check if user is STILL pressing desiredKey right now:
+        if (this.heldKeys.has(desiredKey)) {
+            if (this.engineKey !== desiredKey) {
+                // "start freshly, just like if user pressed going left right one it was ok"
+                this.applyEngineKey(desiredKey);
             } else {
-                // Long continuous hold (> 400ms): re-assert key for continuous smooth walking!
-                this.t.keyPressed(key);
-                state.repeatActive = true;
+                // Keep asserting key in engine so Jack takes step after step smoothly without stopping!
+                this.t.keyPressed(desiredKey);
             }
         }
     }
@@ -376,7 +469,48 @@ function setupInputControls(tInstance, dirManager) {
         "NumpadDivide": 35, "Equal": 35
     };
 
+    // Toolbar Buttons & Sound Controls
+    const btnMute = document.getElementById("btn-mute");
+    const volSlider = document.getElementById("volume-slider");
+
+    function updateMuteButtonUI(muted) {
+        if (btnMute) {
+            btnMute.textContent = muted ? "🔇" : "🔊";
+            btnMute.classList.toggle("muted", muted);
+            btnMute.title = muted ? "Unmute Sound (or press M)" : "Mute Sound (or press M)";
+        }
+        if (volSlider) {
+            volSlider.style.opacity = muted ? "0.35" : "1";
+        }
+    }
+
+    if (btnMute) {
+        updateMuteButtonUI(AudioManager.muted);
+        btnMute.addEventListener("click", () => {
+            const muted = AudioManager.toggleMute();
+            updateMuteButtonUI(muted);
+        });
+    }
+
+    if (volSlider) {
+        volSlider.value = Math.round(AudioManager.volume * 100);
+        volSlider.addEventListener("input", (e) => {
+            const val = parseFloat(e.target.value) / 100;
+            AudioManager.setVolume(val);
+            if (AudioManager.muted && val > 0) {
+                AudioManager.setMuted(false);
+            }
+            updateMuteButtonUI(AudioManager.muted);
+        });
+    }
+
     window.addEventListener("keydown", (e) => {
+        if (e.code === "KeyM") {
+            const muted = AudioManager.toggleMute();
+            updateMuteButtonUI(muted);
+            e.preventDefault();
+            return;
+        }
         const j2meKey = KEY_MAP[e.code];
         if (j2meKey !== undefined) {
             e.preventDefault();
@@ -432,10 +566,6 @@ function setupInputControls(tInstance, dirManager) {
         btn.addEventListener("pointerdown", handlePress);
         btn.addEventListener("pointerup", handleRelease);
         btn.addEventListener("pointercancel", handleRelease);
-        btn.addEventListener("pointerleave", handleRelease);
-        btn.addEventListener("touchend", handleRelease);
-        btn.addEventListener("touchcancel", handleRelease);
-        btn.addEventListener("mouseup", handleRelease);
     });
 
     // Global fail-safe release for touches/clicks moving outside element bounds
@@ -455,21 +585,17 @@ function setupInputControls(tInstance, dirManager) {
         dirManager.releaseAll();
     };
 
-    window.addEventListener("pointerup", releaseAllButtons);
-    window.addEventListener("pointercancel", releaseAllButtons);
-    window.addEventListener("mouseup", releaseAllButtons);
-    window.addEventListener("touchend", releaseAllButtons);
-    window.addEventListener("touchcancel", releaseAllButtons);
-    window.addEventListener("blur", releaseAllButtons);
+    const handleGlobalRelease = (e) => {
+        // If there are still active touches on the screen, don't kill other buttons!
+        if (e.touches && e.touches.length > 0) return;
+        // If this pointer was captured or released directly on a button, that button handles it
+        if (e.target && e.target.classList && e.target.classList.contains("ctrl-btn")) return;
+        releaseAllButtons();
+    };
 
-    // Toolbar Buttons
-    const btnMute = document.getElementById("btn-mute");
-    if (btnMute) {
-        btnMute.addEventListener("click", () => {
-            const muted = AudioManager.toggleMute();
-            btnMute.textContent = muted ? "🔇" : "🔊";
-        });
-    }
+    window.addEventListener("pointerup", handleGlobalRelease);
+    window.addEventListener("pointercancel", handleGlobalRelease);
+    window.addEventListener("blur", releaseAllButtons);
 
     const btnKbd = document.getElementById("btn-kbd-toggle");
     const numKeypad = document.getElementById("num-keypad");

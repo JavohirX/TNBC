@@ -319,7 +319,7 @@ export class LibMidi {
     setMuted(mute) {
         this.isMuted = !!mute;
         if (this.masterGain) {
-            this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 1, this.context.currentTime);
+            this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : 0.35, this.context.currentTime);
         }
     }
 

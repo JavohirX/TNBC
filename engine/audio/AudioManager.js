@@ -9,8 +9,16 @@ class RetroMidiSynthesizer {
         this.ctx = null;
         this.masterGain = null;
         this.filterNode = null;
+        this.compressor = null;
         this.noiseBuffer = null;
-        this.muted = false;
+
+        // Restore muted preference from localStorage
+        const storedMute = typeof localStorage !== 'undefined' ? localStorage.getItem('nbc_muted') : null;
+        this.muted = storedMute === 'true';
+
+        // Volume level (0.0 to 1.0), default comfortable 0.35 (35%)
+        const storedVol = typeof localStorage !== 'undefined' ? parseFloat(localStorage.getItem('nbc_volume')) : NaN;
+        this.volume = (!isNaN(storedVol) && storedVol >= 0 && storedVol <= 1) ? storedVol : 0.35;
 
         // Current track playback state
         this.currentTrackId = -1;
@@ -45,15 +53,28 @@ class RetroMidiSynthesizer {
             if (AudioContext) {
                 this.ctx = new AudioContext();
 
-                // Master Dynamics / Warm Retro Filter
+                // Master Dynamics / Warm Retro Filter: authentic 2005 mobile speaker warmth (rolls off harsh frequencies > 2600 Hz)
                 this.filterNode = this.ctx.createBiquadFilter();
                 this.filterNode.type = "lowpass";
-                this.filterNode.frequency.setValueAtTime(8000, this.ctx.currentTime); // Gentle roll-off for 2005 mobile warmth
+                this.filterNode.frequency.setValueAtTime(2600, this.ctx.currentTime);
+                this.filterNode.Q.setValueAtTime(0.7, this.ctx.currentTime);
 
+                // Master Dynamics Compressor: prevents 14 polyphonic voices from clipping or spiking
+                this.compressor = this.ctx.createDynamicsCompressor();
+                this.compressor.threshold.setValueAtTime(-18, this.ctx.currentTime);
+                this.compressor.knee.setValueAtTime(12, this.ctx.currentTime);
+                this.compressor.ratio.setValueAtTime(8, this.ctx.currentTime);
+                this.compressor.attack.setValueAtTime(0.003, this.ctx.currentTime);
+                this.compressor.release.setValueAtTime(0.15, this.ctx.currentTime);
+
+                // Master Gain (comfortable gentle level)
                 this.masterGain = this.ctx.createGain();
-                this.masterGain.gain.setValueAtTime(this.muted ? 0 : 0.35, this.ctx.currentTime);
+                const currentGain = this.muted ? 0 : (this.volume * 0.28);
+                this.masterGain.gain.setValueAtTime(currentGain, this.ctx.currentTime);
 
-                this.filterNode.connect(this.masterGain);
+                // Audio graph: Voices -> MasterFilter -> Compressor -> MasterGain -> Destination
+                this.filterNode.connect(this.compressor);
+                this.compressor.connect(this.masterGain);
                 this.masterGain.connect(this.ctx.destination);
 
                 this._buildNoiseBuffer();
@@ -83,10 +104,25 @@ class RetroMidiSynthesizer {
         }
     }
 
+    setVolume(vol) {
+        this.volume = Math.max(0, Math.min(1, vol));
+        if (typeof localStorage !== 'undefined') {
+            try { localStorage.setItem('nbc_volume', this.volume.toFixed(2)); } catch (_) {}
+        }
+        if (this.masterGain && this.ctx) {
+            const targetGain = this.muted ? 0 : (this.volume * 0.28);
+            this.masterGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.02);
+        }
+    }
+
     setMuted(muted) {
         this.muted = !!muted;
+        if (typeof localStorage !== 'undefined') {
+            try { localStorage.setItem('nbc_muted', this.muted ? 'true' : 'false'); } catch (_) {}
+        }
         if (this.masterGain && this.ctx) {
-            this.masterGain.gain.setValueAtTime(this.muted ? 0 : 0.35, this.ctx.currentTime);
+            const targetGain = this.muted ? 0 : (this.volume * 0.28);
+            this.masterGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.02);
         }
     }
 
@@ -96,7 +132,7 @@ class RetroMidiSynthesizer {
     }
 
     /**
-     * Synthesize single buzzer/tone (retro J2ME single frequency).
+     * Synthesize single buzzer/tone (retro J2ME single frequency, warm mellow tone).
      */
     playTone(note, duration, volume = 50) {
         if (this.muted) return;
@@ -108,10 +144,10 @@ class RetroMidiSynthesizer {
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
 
-            osc.type = "square";
+            osc.type = "triangle"; // Warm retro tone instead of harsh buzzing square
             osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
 
-            const vol = Math.max(0, Math.min(1, volume / 100)) * 0.25;
+            const vol = Math.max(0, Math.min(1, volume / 100)) * 0.10;
             const now = this.ctx.currentTime;
             const dur = Math.max(0.04, duration / 1000);
 
@@ -127,7 +163,7 @@ class RetroMidiSynthesizer {
     }
 
     playClick() {
-        this.playTone(84, 18, 15);
+        this.playTone(72, 14, 8); // Gentle soft tick
     }
 
     /**
@@ -138,16 +174,27 @@ class RetroMidiSynthesizer {
         if (bytes instanceof Int8Array) {
             bytes = new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
         }
-        // If last byte is Living Mobile type indicator, strip it
-        if (bytes.length > 4 && String.fromCharCode(...bytes.slice(0, 4)) !== 'MThd') {
-            // Find MThd magic if offset
-            const str = String.fromCharCode(...bytes.slice(0, 16));
-            const idx = str.indexOf('MThd');
-            if (idx > 0) bytes = bytes.slice(idx);
-        } else if (bytes.length > 4 && bytes[bytes.length - 1] === 0) {
-            // Check if MThd starts at 0
-            if (String.fromCharCode(...bytes.slice(0, 4)) === 'MThd') {
-                bytes = bytes.slice(0, bytes.length - 1);
+        // Find MThd magic if offset
+        let start = 0;
+        for (let i = 0; i < Math.min(bytes.length - 4, 32); i++) {
+            if (bytes[i] === 0x4D && bytes[i+1] === 0x54 && bytes[i+2] === 0x68 && bytes[i+3] === 0x64) {
+                start = i;
+                break;
+            }
+        }
+        if (start > 0) bytes = bytes.slice(start);
+
+        // Strip any extra Living Mobile type indicator trailing byte based on exact MIDI header & chunk lengths
+        if (bytes.length > 14) {
+            const tempView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+            const numTracks = tempView.getUint16(10);
+            let expectedEnd = 14;
+            for (let t = 0; t < numTracks && expectedEnd + 8 <= bytes.length; t++) {
+                const trkLen = tempView.getUint32(expectedEnd + 4);
+                expectedEnd += 8 + trkLen;
+            }
+            if (expectedEnd > 14 && expectedEnd < bytes.length) {
+                bytes = bytes.slice(0, expectedEnd);
             }
         }
 
@@ -398,7 +445,8 @@ class RetroMidiSynthesizer {
 
         try {
             const duration = Math.min(4.0, Math.max(0.04, note.duration));
-            const baseVol = (note.vel / 127) * 0.18; // Balanced mix
+            // Comfortable per-voice volume (prevents 14-voice polyphony from overwhelming ears)
+            const baseVol = (note.vel / 127) * 0.07;
             const stopTime = startTime + duration;
 
             if (note.isDrum) {
@@ -406,46 +454,66 @@ class RetroMidiSynthesizer {
                 return;
             }
 
-            // Melodic Voice Synthesis
+            // Melodic Voice Synthesis with warm dedicated voice filtering
             const osc = this.ctx.createOscillator();
+            const voiceFilter = this.ctx.createBiquadFilter();
+            voiceFilter.type = "lowpass";
             const gain = this.ctx.createGain();
 
             const freq = 440 * Math.pow(2, (note.note - 69) / 12);
             osc.frequency.setValueAtTime(freq, startTime);
 
-            // Program / Instrument mapping for retro J2ME Nokia 2005 feel
+            // Program / Instrument mapping with warm acoustic frequency shaping
             const p = note.program || 0;
             if (p >= 16 && p <= 23) {
-                osc.type = "sine"; // Organ / Warm tone
+                osc.type = "sine"; // Organ: warm, smooth
+                voiceFilter.frequency.setValueAtTime(2400, startTime);
             } else if (p >= 32 && p <= 39) {
-                osc.type = "triangle"; // Deep Bass
+                osc.type = "triangle"; // Deep Bass: round, warm
+                voiceFilter.frequency.setValueAtTime(900, startTime);
             } else if (p >= 40 && p <= 55) {
-                osc.type = "sawtooth"; // Orchestral Strings (Iconic Danny Elfman!)
+                // Orchestral Strings (Danny Elfman motif):
+                // Sawtooth warmly filtered at 1500 Hz gives iconic rich orchestral character without piercing buzz!
+                osc.type = "sawtooth";
+                voiceFilter.frequency.setValueAtTime(1500, startTime);
+                voiceFilter.Q.setValueAtTime(0.9, startTime);
             } else if (p >= 56 && p <= 71) {
-                osc.type = "square"; // Brass / Woodwinds
+                // Brass / Woodwinds:
+                // Square wave filtered at 1300 Hz turns harsh buzz into warm French horn / reed
+                osc.type = "square";
+                voiceFilter.frequency.setValueAtTime(1300, startTime);
+                voiceFilter.Q.setValueAtTime(0.7, startTime);
             } else if (p >= 72 && p <= 79) {
-                osc.type = "sine"; // Flute / Whistle
+                osc.type = "sine"; // Flute / Whistle: soft sine
+                voiceFilter.frequency.setValueAtTime(2600, startTime);
             } else {
-                osc.type = "triangle"; // Default retro melodic voice
+                osc.type = "triangle"; // Default retro melodic voice: mellow triangle
+                voiceFilter.frequency.setValueAtTime(1800, startTime);
             }
 
-            // Envelope: Quick attack, sustain, gentle exponential release
+            // Envelope: Smooth 25ms attack to prevent ear clicks, gentle sustain & natural decay
+            const attackTime = Math.min(0.025, duration * 0.25);
             gain.gain.setValueAtTime(0.0001, startTime);
-            gain.gain.linearRampToValueAtTime(baseVol, startTime + 0.015);
-            gain.gain.setValueAtTime(baseVol * 0.85, startTime + Math.max(0.02, duration * 0.7));
+            gain.gain.linearRampToValueAtTime(baseVol, startTime + attackTime);
+            gain.gain.setValueAtTime(baseVol * 0.75, startTime + Math.max(attackTime + 0.01, duration * 0.65));
             gain.gain.exponentialRampToValueAtTime(0.0001, stopTime + 0.04);
 
-            osc.connect(gain);
+            osc.connect(voiceFilter);
+            voiceFilter.connect(gain);
             gain.connect(this.filterNode);
 
             osc.start(startTime);
             osc.stop(stopTime + 0.05);
 
-            const voiceRef = { osc, gain };
+            const voiceRef = { osc, voiceFilter, gain };
             this.activeVoices.add(voiceRef);
             osc.onended = () => {
                 this.activeVoices.delete(voiceRef);
-                try { osc.disconnect(); gain.disconnect(); } catch (e) {}
+                try {
+                    osc.disconnect();
+                    voiceFilter.disconnect();
+                    gain.disconnect();
+                } catch (e) {}
             };
         } catch (e) {}
     }
@@ -454,29 +522,32 @@ class RetroMidiSynthesizer {
         if (!this.ctx) return;
 
         try {
-            // Kick Drum (35, 36)
+            // Kick Drum (35, 36) - Soft, deep acoustic thud
             if (drumNote === 35 || drumNote === 36) {
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = "sine";
-                osc.frequency.setValueAtTime(140, startTime);
-                osc.frequency.exponentialRampToValueAtTime(38, startTime + 0.08);
+                osc.frequency.setValueAtTime(120, startTime);
+                osc.frequency.exponentialRampToValueAtTime(35, startTime + 0.07);
 
-                gain.gain.setValueAtTime(baseVol * 1.5, startTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.09);
+                gain.gain.setValueAtTime(baseVol * 0.85, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.08);
 
                 osc.connect(gain);
                 gain.connect(this.filterNode);
                 osc.start(startTime);
-                osc.stop(startTime + 0.1);
+                osc.stop(startTime + 0.09);
 
                 const v = { osc, gain };
                 this.activeVoices.add(v);
-                osc.onended = () => { this.activeVoices.delete(v); };
+                osc.onended = () => {
+                    this.activeVoices.delete(v);
+                    try { osc.disconnect(); gain.disconnect(); } catch (e) {}
+                };
                 return;
             }
 
-            // Snare / Hi-Hat / Cymbal (White Noise based)
+            // Snare / Hi-Hat / Cymbal - Soft, warm filtered noise (NOT ear-piercing static hiss)
             if (this.noiseBuffer) {
                 const noise = this.ctx.createBufferSource();
                 noise.buffer = this.noiseBuffer;
@@ -485,24 +556,31 @@ class RetroMidiSynthesizer {
                 const gain = this.ctx.createGain();
 
                 const isHiHat = (drumNote === 42 || drumNote === 44 || drumNote === 46);
-                const dur = isHiHat ? 0.04 : 0.10;
+                const dur = isHiHat ? 0.03 : 0.06;
 
-                filter.type = isHiHat ? "highpass" : "bandpass";
-                filter.frequency.setValueAtTime(isHiHat ? 7000 : 2200, startTime);
+                // Hi-Hat: 4500Hz gentle tick with 0.15 volume (was 7000Hz harsh hiss at 0.7)
+                // Snare: 1200Hz soft tap with 0.30 volume (was 2200Hz abrasive blast at 1.2)
+                filter.type = "bandpass";
+                filter.frequency.setValueAtTime(isHiHat ? 4500 : 1200, startTime);
+                filter.Q.setValueAtTime(isHiHat ? 2.0 : 1.4, startTime);
 
-                gain.gain.setValueAtTime(baseVol * (isHiHat ? 0.7 : 1.2), startTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+                const drumVol = baseVol * (isHiHat ? 0.15 : 0.30);
+                gain.gain.setValueAtTime(drumVol, startTime);
+                gain.gain.exponentialRampToValueAtTime(0.0005, startTime + dur);
 
                 noise.connect(filter);
                 filter.connect(gain);
                 gain.connect(this.filterNode);
 
                 noise.start(startTime);
-                noise.stop(startTime + dur + 0.02);
+                noise.stop(startTime + dur + 0.01);
 
-                const v = { osc: noise, gain };
+                const v = { osc: noise, filter, gain };
                 this.activeVoices.add(v);
-                noise.onended = () => { this.activeVoices.delete(v); };
+                noise.onended = () => {
+                    this.activeVoices.delete(v);
+                    try { noise.disconnect(); filter.disconnect(); gain.disconnect(); } catch (e) {}
+                };
             }
         } catch (e) {}
     }
@@ -528,6 +606,8 @@ class RetroMidiSynthesizer {
                     voice.gain.gain.setValueAtTime(voice.gain.gain.value, now);
                     voice.gain.gain.linearRampToValueAtTime(0.0001, now + 0.02);
                     voice.osc.stop(now + 0.025);
+                    if (voice.voiceFilter) voice.voiceFilter.disconnect();
+                    if (voice.filter) voice.filter.disconnect();
                 } catch (e) {}
             }
         }

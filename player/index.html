@@ -336,6 +336,41 @@
             border-color: #ef4444;
         }
 
+        .vol-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 44px;
+            height: 6px;
+            border-radius: 3px;
+            background: #1e2232;
+            border: 1px solid #33384e;
+            outline: none;
+            cursor: pointer;
+            margin: 0 2px;
+            transition: opacity 0.2s ease;
+        }
+
+        .vol-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #f59e0b;
+            border: 1px solid #fff;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+
+        .vol-slider::-moz-range-thumb {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: #f59e0b;
+            border: 1px solid #fff;
+            cursor: pointer;
+        }
+
         /* --- MAIN PAD AREA (8-WAY D-PAD + ACTION CLUSTER) --- */
         .main-pad-row {
             display: flex;
@@ -603,7 +638,8 @@
                     <span class="soft-label-sub">LSK</span>
                 </button>
                 <div class="center-tools">
-                    <button id="btn-mute" class="ctrl-btn tool-btn" title="Toggle Sound">🔊</button>
+                    <button id="btn-mute" class="ctrl-btn tool-btn" title="Toggle Sound (or press M)">🔊</button>
+                    <input id="volume-slider" type="range" min="0" max="100" value="35" class="vol-slider" title="Music Volume" aria-label="Music Volume">
                     <button id="btn-kbd-toggle" class="ctrl-btn tool-btn" title="Toggle Number Keypad">🔢</button>
                     <button id="btn-fullscreen" class="ctrl-btn tool-btn" title="Fullscreen">⛶</button>
                     <button id="btn-reset" class="ctrl-btn tool-btn" title="Restart Game">⟲</button>

@@ -253,7 +253,7 @@ export class n {
     let n2 = 0;
     let d2 = new d();
     let h2 = new h();
-    new h().f_c = 107;
+    h2.f_c = 107;
     h2.f_d = 1;
     h2.f_e = 0;
     h2.f_b = 0 - t.var_int_c + this.var_t_a.var_int_f;
@@ -498,7 +498,7 @@ export class n {
     return;
     }
     let h2 = new h();
-    new h().f_d = 1;
+    h2.f_d = 1;
     h2.f_a = n2 * t.var_int_c + this.var_t_a.var_int_g;
     h2.f_b = n3 * t.var_int_c + this.var_t_a.var_int_f;
     h2.f_c = this.var_r_a.var_short_arr_arr_c[n2][n3];
