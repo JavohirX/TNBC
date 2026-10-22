@@ -47,19 +47,19 @@ async def handle_start(message: types.Message):
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="🎮 Play Demo 1 (Sharp HD)",
+                    text="🎮 Play Demo 1 (xBR Pixel Art)",
                     web_app=WebAppInfo(url=f"{player_base}/?demo=1")
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="🎨 Play Demo 2 (Vector Contour)",
+                    text="🎨 Play Demo 2 (16-Bit Deluxe)",
                     web_app=WebAppInfo(url=f"{player_base}/?demo=2")
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text="🎃 Play Demo 3 (Burton Remaster)",
+                    text="📺 Play Demo 3 (Nokia LCD Matrix)",
                     web_app=WebAppInfo(url=f"{player_base}/?demo=3")
                 )
             ]
@@ -67,12 +67,13 @@ async def handle_start(message: types.Message):
     )
 
     caption = (
-        "🎃 <b>The Nightmare Before Christmas - HD Demos</b>\n\n"
-        "Compare the 3 upscaled art options across Levels 1 & 2:\n\n"
-        "• <b>Demo 1: Sharp HD</b> — Authentic 2x integer, crisp gothic Burton skull, zero waxy smoothing.\n"
-        "• <b>Demo 2: Vector Contour</b> — Scale2x smart diagonal curves with face protection.\n"
-        "• <b>Demo 3: Burton Remaster</b> — Gothic claymation, sunken eye sockets & ink sketch lines.\n\n"
-        "<i>Tip: You can also tap the <b>[D1]</b> button inside the game to switch styles live on the fly!</i>"
+        "🎃 <b>The Nightmare Before Christmas - Pixel Art Demos</b>\n\n"
+        "Compare the 3 genuine pixel-art focused approaches across Levels 1 & 2:\n\n"
+        "• <b>Demo 1: xBR Pixel Art</b> — Authentic rule-based diagonal pattern interpolator, 100% discrete original palette, zero blur.\n"
+        "• <b>Demo 2: 16-Bit Deluxe</b> — SNES/GBA/Neo-Geo style remaster with 2x2 cluster dithering, bone highlights, and high-contrast pixel ink.\n"
+        "• <b>Demo 3: Nokia LCD Matrix</b> — Authentic 2005 Nokia TFT subpixel aperture grille, tactile hardware pixel separation on OLED.\n\n"
+        "<i>Tip: You can also tap the <b>[D1]</b> button inside the game to switch styles live on the fly, and <b>[L2]</b> to jump to Level 2!</i>"
+    )
     )
 
     try:

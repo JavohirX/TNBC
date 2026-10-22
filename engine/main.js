@@ -605,9 +605,9 @@ function setupInputControls(tInstance, dirManager) {
 
     const btnHd = document.getElementById("btn-hd");
     const MODES = [
-        { id: "demo1", label: "D1", name: "Demo 1: Sharp HD", desc: "Crisp integer 2x, authentic Burton gothic silhouette" },
-        { id: "demo2", label: "D2", name: "Demo 2: Vector Contour", desc: "Scale2x smart diagonal smoothing with face protection" },
-        { id: "demo3", label: "D3", name: "Demo 3: Burton Remaster", desc: "Gothic claymation, sunken eye sockets & ink outlines" },
+        { id: "demo1", label: "D1", name: "Demo 1: xBR Pixel Art", desc: "Pure pixel-art pattern interpolation, 100% discrete palette, zero blur" },
+        { id: "demo2", label: "D2", name: "Demo 2: 16-Bit Deluxe", desc: "SNES/GBA style, 2x2 cluster dithering & bone highlights" },
+        { id: "demo3", label: "D3", name: "Demo 3: Nokia LCD Matrix", desc: "Physical TFT subpixel aperture grille, tactile hardware pixels" },
         { id: "1x",    label: "1X", name: "Native 1x Original", desc: "Unscaled 2005 Living Mobile pixel art" }
     ];
 
