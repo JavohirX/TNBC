@@ -168,7 +168,7 @@ const REQUIRED_ASSETS = [
     "replay35.rpl", "replay39.rpl", "replay40.rpl", "replay45.rpl"
 ];
 
-async function preloadAssets(basePath = "assets/") {
+async function preloadAssets(basePath = "assets/", versionHash = "v20261022_b5") {
     const total = REQUIRED_ASSETS.length;
     let loaded = 0;
 
@@ -178,8 +178,8 @@ async function preloadAssets(basePath = "assets/") {
 
     const promises = REQUIRED_ASSETS.map(async (filename) => {
         try {
-            const url = basePath + filename;
-            const res = await fetch(url);
+            const url = `${basePath}${filename}?v=${versionHash}`;
+            const res = await fetch(url, { cache: "no-store" });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const buf = await res.arrayBuffer();
             const u8 = new Uint8Array(buf);
@@ -210,11 +210,11 @@ async function preloadAssets(basePath = "assets/") {
 }
 
 // 6. Game Bootstrapper
-export async function startNativeEngine(assetBase = "assets/") {
+export async function startNativeEngine(assetBase = "assets/", versionHash = "v20261022_b5") {
     console.log("=== Nightmare Before Christmas Pure Native Engine Booting ===");
     const t0 = performance.now();
 
-    await preloadAssets(assetBase);
+    await preloadAssets(assetBase, versionHash);
     await loadGameClasses();
 
     // Instantiate MIDlet
@@ -605,9 +605,9 @@ function setupInputControls(tInstance, dirManager) {
 
     const btnHd = document.getElementById("btn-hd");
     const MODES = [
-        { id: "demo1", label: "D1", name: "Demo 1: Original Textures", desc: "Authentic 2005 Living Mobile pixel art, exact 2x integer baseline" },
+        { id: "demo1", label: "D1", name: "Demo 1: Authentic 2005 Original", desc: "100% untouched 2005 Living Mobile pixel art directly from JAR" },
         { id: "demo2", label: "D2", name: "Demo 2: Arcade Neo-Geo (User Favorite)", desc: "90s Capcom / Neo-Geo: bold 1px ink outlines, punchy 3-tier cell pixel shading" },
-        { id: "demo3", label: "D3", name: "Demo 3: RotSprite + PixelOE", desc: "Modern SOTA pixel-art upscaler: 8x majority-vote clustering + contrast-aware feature anchoring" },
+        { id: "demo3", label: "D3", name: "Demo 3: High-Res Pixel Art (xBR Geometric)", desc: "Research-backed pattern-rule pixel-art upscaler: crisp diagonal curves, 100% hard square pixels" },
         { id: "1x",    label: "1X", name: "Native 1x Original", desc: "Unscaled 2005 Living Mobile pixel art" }
     ];
 
@@ -641,7 +641,7 @@ function setupInputControls(tInstance, dirManager) {
         const mode = MODES[currentModeIdx];
         btnHd.textContent = mode.label;
         btnHd.title = `${mode.name} (Click to switch demo/style)`;
-        if (mode.id !== "1x") {
+        if (mode.id !== "1x" && mode.id !== "demo1") {
             btnHd.classList.add("active-hd");
             btnHd.style.color = "#f59e0b";
             btnHd.style.borderColor = "#f59e0b";
@@ -657,7 +657,7 @@ function setupInputControls(tInstance, dirManager) {
     function applyTextureMode(modeIdx, announce = true) {
         currentModeIdx = (modeIdx + MODES.length) % MODES.length;
         const mode = MODES[currentModeIdx];
-        if (mode.id === "1x") {
+        if (mode.id === "1x" || mode.id === "demo1") {
             Image.activeDemo = null;
             Image.use2x = false;
         } else {

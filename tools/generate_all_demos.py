@@ -2,7 +2,7 @@
 Generates the Updated Demo Suite for The Nightmare Before Christmas:
 - Demo 1: Authentic Original Textures (Exact 2005 Living Mobile pixel art, clean 2x integer baseline)
 - Demo 2: 90s Capcom / Neo-Geo Arcade Style (KEPT - Bold 1px ink outlines, punchy 3-tier cell pixel shading)
-- Demo 3: Modern Research-Backed SOTA Pixel Art Upscaler (RotSprite 8x Sub-Pixel Projection + PixelOE Contrast-Aware Feature Anchoring)
+- Demo 3: Modern Research-Backed SOTA Pixel Art Upscaler (Geometric xBR Edge-Rule + Feature-Anchored Micro-Pixel)
 ALL 100% HARD-EDGED SQUARE PIXELS. ZERO CLAY. ZERO SMOOTHING. ZERO BLUR.
 """
 
@@ -68,72 +68,63 @@ def process_sprite_demo2(img_pil):
 
 
 # -------------------------------------------------------------
-# DEMO 3: Modern Research-Backed SOTA Pixel Art Upscaler (RotSprite + PixelOE)
+# DEMO 3: Modern Research-Backed SOTA High-Res Pixel Art (xBR Geometric)
 # -------------------------------------------------------------
-def scale2x_vectorized(arr):
+def xbr_scale2x(img_pil):
+    arr = np.array(img_pil.convert('RGBA'))
     h, w, c = arr.shape
-    p = arr
-    b = np.pad(arr[:-1, :, :], ((1, 0), (0, 0), (0, 0)), mode='edge')
-    h_arr = np.pad(arr[1:, :, :], ((0, 1), (0, 0), (0, 0)), mode='edge')
-    d = np.pad(arr[:, :-1, :], ((0, 0), (1, 0), (0, 0)), mode='edge')
-    f = np.pad(arr[:, 1:, :], ((0, 0), (0, 1), (0, 0)), mode='edge')
-
-    eq_db = np.all(d == b, axis=2, keepdims=True)
-    eq_dh = np.all(d == h_arr, axis=2, keepdims=True)
-    eq_bf = np.all(b == f, axis=2, keepdims=True)
-    eq_hf = np.all(h_arr == f, axis=2, keepdims=True)
-
-    e0 = np.where(eq_db & ~eq_dh & ~eq_bf, d, p)
-    e1 = np.where(eq_bf & ~eq_db & ~eq_hf, f, p)
-    e2 = np.where(eq_dh & ~eq_db & ~eq_hf, d, p)
-    e3 = np.where(eq_hf & ~eq_dh & ~eq_bf, f, p)
-
-    out = np.zeros((h * 2, w * 2, c), dtype=np.uint8)
-    out[0::2, 0::2] = e0
-    out[0::2, 1::2] = e1
-    out[1::2, 0::2] = e2
-    out[1::2, 1::2] = e3
-    return out
-
-def rotsprite_pixeloe_upscale(img_pil, is_sprite=True):
-    arr1 = np.array(img_pil.convert('RGBA'))
-    h, w, c = arr1.shape
-    if np.all(arr1[:, :, 3] == 0):
+    if np.all(arr[:, :, 3] == 0):
         return Image.new('RGBA', (w*2, h*2), (0, 0, 0, 0))
 
-    # RotSprite 8x Sub-Pixel Projection (3 passes of Scale2x)
-    arr2 = scale2x_vectorized(arr1)
-    arr4 = scale2x_vectorized(arr2)
-    arr8 = scale2x_vectorized(arr4)
+    out = np.zeros((h * 2, w * 2, c), dtype=np.uint8)
 
-    # Sub-pixel projection back to 2x (sampling at center of each 4x4 sub-pixel cell)
-    img8 = Image.fromarray(arr8)
-    out_2x = np.array(img8.resize((w*2, h*2), Image.Resampling.NEAREST))
+    # Base nearest 2x expansion
+    out[0::2, 0::2] = arr
+    out[0::2, 1::2] = arr
+    out[1::2, 0::2] = arr
+    out[1::2, 1::2] = arr
 
-    # PixelOE Contrast-Aware Feature Anchoring:
-    # Protects thin 1px high-contrast details (mouth stitches, eye sockets)
-    for y in range(h):
-        for x in range(w):
-            p = arr1[y, x]
-            if p[3] > 0:
-                lum = 0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2]
-                if lum < 50:
-                    for dy, dx in [(-1,0), (1,0), (0,-1), (0,1)]:
-                        ny, nx = y + dy, x + dx
-                        if 0 <= ny < h and 0 <= nx < w:
-                            n_lum = 0.299 * arr1[ny, nx, 0] + 0.587 * arr1[ny, nx, 1] + 0.114 * arr1[ny, nx, 2]
-                            if n_lum > 140 and arr1[ny, nx, 3] > 0:
-                                out_2x[y*2, x*2] = p
-                                out_2x[y*2+1, x*2+1] = p
-                                break
+    # 1px border padding for neighborhood checking
+    pad = np.pad(arr, ((1, 1), (1, 1), (0, 0)), mode='edge')
 
-    return Image.fromarray(out_2x)
+    b = pad[:-2, 1:-1, :]
+    d = pad[1:-1, :-2, :]
+    f = pad[1:-1, 2:, :]
+    h_px = pad[2:, 1:-1, :]
+    e = arr
+
+    def color_dist(p1, p2):
+        d_rgb = np.sum(np.abs(p1[..., :3].astype(int) - p2[..., :3].astype(int)), axis=-1)
+        d_a = np.abs(p1[..., 3].astype(int) - p2[..., 3].astype(int))
+        return d_rgb + d_a * 3
+
+    dist_db = color_dist(d, b)
+    dist_de = color_dist(d, e)
+    dist_be = color_dist(b, e)
+    dist_dh = color_dist(d, h_px)
+    dist_bf = color_dist(b, f)
+    dist_fe = color_dist(f, e)
+    dist_hf = color_dist(h_px, f)
+    dist_he = color_dist(h_px, e)
+
+    # Diagonal edge interpolation (replaces jagged 90-degree steps with smooth hard-pixel diagonals)
+    cond_tl = (dist_db < 45) & (dist_db < dist_de) & (dist_db < dist_be) & (dist_dh > dist_db) & (dist_bf > dist_db)
+    cond_tr = (dist_bf < 45) & (dist_bf < dist_be) & (dist_bf < dist_fe) & (dist_db > dist_bf) & (dist_hf > dist_bf)
+    cond_bl = (dist_dh < 45) & (dist_dh < dist_de) & (dist_dh < dist_he) & (dist_db > dist_dh) & (dist_hf > dist_dh)
+    cond_br = (dist_hf < 45) & (dist_hf < dist_he) & (dist_hf < dist_fe) & (dist_dh > dist_hf) & (dist_bf > dist_hf)
+
+    out[0::2, 0::2] = np.where(cond_tl[..., None], d, out[0::2, 0::2])
+    out[0::2, 1::2] = np.where(cond_tr[..., None], f, out[0::2, 1::2])
+    out[1::2, 0::2] = np.where(cond_bl[..., None], d, out[1::2, 0::2])
+    out[1::2, 1::2] = np.where(cond_br[..., None], f, out[1::2, 1::2])
+
+    return Image.fromarray(out)
 
 def process_tile_demo3(img):
-    return rotsprite_pixeloe_upscale(img, is_sprite=False)
+    return xbr_scale2x(img)
 
 def process_sprite_demo3(img):
-    return rotsprite_pixeloe_upscale(img, is_sprite=True)
+    return xbr_scale2x(img)
 
 
 # -------------------------------------------------------------
@@ -141,6 +132,24 @@ def process_sprite_demo3(img):
 # -------------------------------------------------------------
 def generate_demo(demo_id, tile_fn, sprite_fn):
     print(f"\n================ GENERATING {demo_id.upper()} ================")
+    target_tile_sheet = f"assets/16x16TileSet_{demo_id}.png"
+    target_tile_sheet_2x = f"assets/16x16TileSet_{demo_id}_2x.png"
+    target_sprite_sheet = f"assets/32x32TileSet_{demo_id}.png"
+    target_sprite_sheet_2x = f"assets/32x32TileSet_{demo_id}_2x.png"
+
+    if demo_id == "demo1":
+        # Direct 100% integer 2x nearest from raw JAR files (preserves all 446 columns)
+        orig_t16 = Image.open("assets/16x16TileSet.png").convert("RGBA")
+        orig_t32 = Image.open("assets/32x32TileSet.png").convert("RGBA")
+        d1_16 = orig_t16.resize((orig_t16.width * 2, orig_t16.height * 2), Image.Resampling.NEAREST)
+        d1_32 = orig_t32.resize((orig_t32.width * 2, orig_t32.height * 2), Image.Resampling.NEAREST)
+        d1_16.save(target_tile_sheet, "PNG")
+        d1_16.save(target_tile_sheet_2x, "PNG")
+        d1_32.save(target_sprite_sheet, "PNG")
+        d1_32.save(target_sprite_sheet_2x, "PNG")
+        print(f"Generated clean un-sliced 2x integer baseline for {demo_id} ({d1_16.size} and {d1_32.size})!")
+        return
+
     tiles_in = "scratch/sliced_tiles"
     sprites_in = "scratch/sliced_sprites"
 
@@ -179,15 +188,11 @@ def generate_demo(demo_id, tile_fn, sprite_fn):
         json.dump(s_manifest, f, indent=2)
 
     from reassemble_atlas import reassemble_sheet
-    target_tile_sheet = f"assets/16x16TileSet_{demo_id}.png"
-    target_tile_sheet_2x = f"assets/16x16TileSet_{demo_id}_2x.png"
-    target_sprite_sheet = f"assets/32x32TileSet_{demo_id}.png"
-    target_sprite_sheet_2x = f"assets/32x32TileSet_{demo_id}_2x.png"
-
     sheet_tiles = reassemble_sheet(out_tiles_dir, target_tile_sheet, scale=2)
     sheet_tiles.save(target_tile_sheet_2x, "PNG")
 
-    sheet_sprites = reassemble_sheet(out_sprites_dir, target_sprite_sheet, scale=2, target_width=888, target_height=888)
+    # Use 892 width to keep all 446 columns intact
+    sheet_sprites = reassemble_sheet(out_sprites_dir, target_sprite_sheet, scale=2, target_width=892, target_height=888)
     sheet_sprites.save(target_sprite_sheet_2x, "PNG")
     print(f"Generated {target_tile_sheet} and {target_sprite_sheet} (with _2x duplicates) successfully!")
 

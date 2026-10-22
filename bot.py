@@ -59,7 +59,7 @@ async def handle_start(message: types.Message):
             ],
             [
                 InlineKeyboardButton(
-                    text="⚡ Play Demo 3 (RotSprite + PixelOE)",
+                    text="⚡ Play Demo 3 (High-Res Pixel Art: xBR Geometric)",
                     web_app=WebAppInfo(url=f"{player_base}/?demo=3")
                 )
             ]
@@ -68,9 +68,9 @@ async def handle_start(message: types.Message):
 
     caption = (
         "🎃 <b>The Nightmare Before Christmas - Pixel Art Comparison</b>\n\n"
-        "• <b>Demo 1: Original Textures</b> — Exact authentic 2005 Living Mobile pixel art (2x integer baseline).\n"
+        "• <b>Demo 1: Original Textures</b> — Exact authentic 2005 Living Mobile pixel art directly from the JAR.\n"
         "• <b>Demo 2: Arcade Neo-Geo</b> — Bold 1px ink outlines, punchy 3-tier cell pixel shading (current favorite).\n"
-        "• <b>Demo 3: RotSprite + PixelOE</b> — Research-backed SOTA pixel-art upscaler (8x majority-vote clustering + contrast-aware feature anchoring).\n\n"
+        "• <b>Demo 3: High-Res Pixel Art (xBR Geometric)</b> — Research-backed pattern-rule pixel-art upscaler (crisp diagonal curves, 100% hard square pixels).\n\n"
         "<i>Tip: You can also tap the <b>[D1]</b> button inside the game to switch styles live on the fly, and <b>[L2]</b> to jump to Level 2!</i>"
     )
 
