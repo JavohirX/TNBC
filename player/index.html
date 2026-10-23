@@ -460,6 +460,149 @@
                 overflow-y: auto;
             }
         }
+
+        /* Laptop / MacBook / desktop: no on-screen pad. The 3:4 game fits the window. */
+        @media (hover: hover) and (pointer: fine) {
+            :root {
+                --controls-panel-height: 0px;
+            }
+
+            #app-container {
+                max-width: none;
+                width: 100%;
+                height: 100%;
+                height: 100dvh;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                box-shadow: none;
+                background: #08090d;
+            }
+
+            #screen-wrapper {
+                width: 100%;
+                height: 100%;
+                max-height: none;
+                flex: 1 1 auto;
+                border: none;
+            }
+
+            #screen-container {
+                /* Whichever side hits the window first wins: height on a wide screen, width on a narrow one. */
+                width: min(100vw, calc(100vh * 0.75));
+                width: min(100vw, calc(100dvh * 0.75));
+                height: min(100vh, calc(100vw * 4 / 3));
+                height: min(100dvh, calc(100vw * 4 / 3));
+                max-width: 100vw;
+                max-height: 100vh;
+                max-height: 100dvh;
+                aspect-ratio: 3 / 4;
+                margin: 0;
+            }
+
+            .mobile-controls-panel {
+                display: none;
+            }
+        }
+
+        #keyboard-hint {
+            display: none;
+            position: fixed;
+            right: max(16px, env(safe-area-inset-right, 0px));
+            bottom: max(16px, env(safe-area-inset-bottom, 0px));
+            z-index: 30;
+            flex-direction: column;
+            gap: 10px;
+            width: max-content;
+            max-width: calc(100vw - 32px);
+            padding: 12px 14px 13px;
+            background: rgba(8, 9, 13, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+            pointer-events: none;
+            color: #9aa3b8;
+            font-size: 11px;
+            font-weight: 650;
+            line-height: 1;
+        }
+
+        .kh-title {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #7f879b;
+        }
+
+        .kh-pads {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .kh-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 26px);
+            grid-template-rows: repeat(2, 24px);
+            gap: 4px;
+        }
+
+        .kh-or {
+            color: #6d758a;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        #keyboard-hint kbd {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 26px;
+            height: 24px;
+            padding: 0 6px;
+            border-radius: 5px;
+            background: linear-gradient(180deg, #3c4258 0%, #262a3b 55%, #1a1e2c 100%);
+            color: #f4f7fb;
+            border-top: 1px solid rgba(255, 255, 255, 0.28);
+            box-shadow: 0 2px 0 #090a10, 0 3px 6px rgba(0, 0, 0, 0.35);
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        #keyboard-hint kbd.wide {
+            min-width: 64px;
+        }
+
+        .kh-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .kh-list li {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 24px;
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            #keyboard-hint {
+                display: flex;
+            }
+        }
+
+        @media (hover: hover) and (pointer: fine) and (max-height: 680px) {
+            #keyboard-hint {
+                transform: scale(0.86);
+                transform-origin: bottom right;
+            }
+        }
     </style>
 </head>
 <body>
@@ -526,6 +669,28 @@
             </div>
         </div>
     </div>
+
+    <!-- Desktop / laptop keyboard legend. Hidden on touch screens. -->
+    <aside id="keyboard-hint" aria-label="Keyboard controls">
+        <p class="kh-title">Keyboard</p>
+        <div class="kh-pads">
+            <div class="kh-pad" aria-hidden="true">
+                <span></span><kbd>W</kbd><span></span>
+                <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>
+            </div>
+            <span class="kh-or">or</span>
+            <div class="kh-pad" aria-hidden="true">
+                <span></span><kbd>↑</kbd><span></span>
+                <kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd>
+            </div>
+        </div>
+        <ul class="kh-list">
+            <li><kbd class="wide">Space</kbd><kbd>Enter</kbd><span>OK</span></li>
+            <li><kbd>Q</kbd><span>Options</span><kbd>E</kbd><span>Back</span></li>
+            <li><kbd>-</kbd><span>✱</span><kbd>0</kbd><kbd>=</kbd><span>#</span></li>
+            <li><kbd>M</kbd><span>Mute</span></li>
+        </ul>
+    </aside>
 
     <!-- 100% Pure Native JavaScript Engine Entrypoint -->
     <script type="module">
